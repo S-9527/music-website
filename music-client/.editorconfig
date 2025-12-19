@@ -1,0 +1,52 @@
+# EditorConfig 配置文件
+# 顶级配置文件，停止向上查找
+root = true
+
+[*]
+# 字符集
+charset = utf-8
+# 行尾换行符格式
+end_of_line = lf
+# 文件末尾插入空行
+insert_final_newline = true
+# 缩进方式
+indent_style = space
+# 缩进大小
+indent_size = 2
+# 最大行宽
+max_line_length = 100
+# 移除行尾空格
+trim_trailing_whitespace = true
+
+# 特定文件类型的缩进设置
+[*.md]
+# Markdown 文件不修剪行尾空格
+trim_trailing_whitespace = false
+max_line_length = 80
+
+# JSON 文件使用 2 空格缩进
+[*.json]
+indent_size = 2
+
+# YAML 文件使用 2 空格缩进
+[*.yaml]
+indent_size = 2
+[*.yml]
+indent_size = 2
+
+# 脚本文件设置
+[*.{js,ts,vue}]
+indent_size = 2
+
+# Vue 单文件组件特殊处理
+[*.vue]
+indent_size = 2
+max_line_length = 100
+
+# TypeScript 配置文件
+[tsconfig.json]
+indent_size = 2
+
+# 包管理文件
+[package.json]
+indent_size = 2

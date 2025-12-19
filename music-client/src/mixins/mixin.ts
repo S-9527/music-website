@@ -1,8 +1,7 @@
 import { getCurrentInstance, computed } from "vue";
 import { useStore } from "vuex";
-import { LocationQueryRaw } from "vue-router";
+import type { LocationQueryRaw } from "vue-router";
 import { RouterName } from "@/enums";
-import { HttpManager } from "@/api";
 import axios from 'axios'
 interface routerOptions {
   path?: string;
@@ -96,7 +95,7 @@ export default function () {
       const response = await axios.get(downUrl, {
         responseType: 'blob', // 指定响应类型为二进制数据
       });
-      
+
       // 创建一个Blob URL来下载文件
       const blob = new Blob([response.data], { type: 'application/octet-stream' });
       const url = window.URL.createObjectURL(blob);
