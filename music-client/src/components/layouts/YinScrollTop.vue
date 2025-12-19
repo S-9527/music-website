@@ -1,32 +1,33 @@
-<template>
-  <div class="scroll-top" @click="returnTop">
-    <div class="box-in"></div>
-  </div>
-</template>
-
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent } from 'vue'
 
 export default defineComponent({
   setup() {
     function returnTop() {
-      let timer: number = null;
-      cancelAnimationFrame(timer);
-      const startTime = new Date();
-      const S = document.body.scrollTop || document.documentElement.scrollTop;
-      const T = 500;
+      let timer: number = null
+      cancelAnimationFrame(timer)
+      const startTime = new Date()
+      const S = document.body.scrollTop || document.documentElement.scrollTop
+      const T = 500
       timer = requestAnimationFrame(function func() {
-        const diff: number = new Date().valueOf() - startTime.valueOf();
-        const t = T - Math.max(0, T - diff);
-        document.documentElement.scrollTop = document.body.scrollTop = S - (t * S) / T;
-        timer = requestAnimationFrame(func);
-        if (t === T) cancelAnimationFrame(timer);
-      });
+        const diff: number = new Date().valueOf() - startTime.valueOf()
+        const t = T - Math.max(0, T - diff)
+        document.documentElement.scrollTop = document.body.scrollTop = S - (t * S) / T
+        timer = requestAnimationFrame(func)
+        if (t === T)
+          cancelAnimationFrame(timer)
+      })
     }
-    return { returnTop };
+    return { returnTop }
   },
-});
+})
 </script>
+
+<template>
+  <div class="scroll-top" @click="returnTop">
+    <div class="box-in" />
+  </div>
+</template>
 
 <style lang="scss" scoped>
 @import "@/assets/css/var.scss";

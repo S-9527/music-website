@@ -1,5 +1,5 @@
 import { getCurrentInstance, ref } from "vue";
-import { LocationQueryRaw } from "vue-router";
+import type { LocationQueryRaw } from "vue-router";
 import { RouterName } from "@/enums";
 
 interface routerOptions {

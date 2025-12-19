@@ -1,55 +1,58 @@
-import { getCurrentInstance, computed } from "vue";
-import { useStore } from "vuex";
-import type { LocationQueryRaw } from "vue-router";
-import { RouterName } from "@/enums";
+import type { LocationQueryRaw } from 'vue-router'
 import axios from 'axios'
+import { computed, getCurrentInstance } from 'vue'
+import { useStore } from 'vuex'
+import { RouterName } from '@/enums'
+
 interface routerOptions {
-  path?: string;
-  query?: LocationQueryRaw;
+  path?: string
+  query?: LocationQueryRaw
 }
 
 export default function () {
-  const { proxy } = getCurrentInstance();
+  const { proxy } = getCurrentInstance()
 
-  const store = useStore();
-  const token = computed(() => store.getters.token);
+  const store = useStore()
+  const token = computed(() => store.getters.token)
 
   function getUserSex(sex) {
     if (sex === 0) {
-      return "女";
-    } else if (sex === 1) {
-      return "男";
+      return '女'
+    }
+    else if (sex === 1) {
+      return '男'
     }
   }
 
   // 获取歌曲名
   function getSongTitle(str) {
-    return str.split("-")[1];
+    return str.split('-')[1]
   }
 
   // 获取歌手名
   function getSingerName(str) {
-    return str.split("-")[0];
+    return str.split('-')[0]
   }
 
   // 判断登录状态
   function checkStatus(status?: boolean) {
     if (!token.value) {
-      if (status !== false)
+      if (status !== false) {
         (proxy as any).$message({
-          message: "请先登录",
-          type: "warning",
-        });
-      return false;
+          message: '请先登录',
+          type: 'warning',
+        })
+      }
+      return false
     }
-    return true;
+    return true
   }
 
   // 播放
   function playMusic({ id, url, pic, index, name, lyric, currentSongList }) {
-    const songTitle = getSongTitle(name);
-    const singerName = getSingerName(name);
-    proxy.$store.dispatch("playMusic", {
+    const songTitle = getSongTitle(name)
+    const singerName = getSingerName(name)
+    proxy.$store.dispatch('playMusic', {
       id,
       url,
       pic,
@@ -58,28 +61,28 @@ export default function () {
       singerName,
       lyric,
       currentSongList,
-    });
+    })
   }
 
   function getFileName(path) {
-    const parts = path.split('/');
-    return parts[parts.length - 1];
+    const parts = path.split('/')
+    return parts[parts.length - 1]
   }
 
   // 下载
   async function downloadMusic({ songUrl, songName }) {
     if (!songUrl) {
       (proxy as any).$message({
-        message: "下载链接为空！",
-        type: "error",
-      });
-      console.error("下载链接为空！");
-      return;
+        message: '下载链接为空！',
+        type: 'error',
+      })
+      console.error('下载链接为空！')
+      return
     }
-    const fileName = getFileName(songUrl);
-    const downUrl="/download/"+fileName
-   // const result = (await HttpManager.downloadMusic(downUrl)) as ResponseBody;
-   // console.log(result.data);
+    const fileName = getFileName(songUrl)
+    const downUrl = `/download/${fileName}`
+    // const result = (await HttpManager.downloadMusic(downUrl)) as ResponseBody;
+    // console.log(result.data);
 
     // const eleLink = document.createElement("a");
     // eleLink.download = `${fileName}`;
@@ -92,37 +95,36 @@ export default function () {
     // eleLink.click();
     // document.body.removeChild(eleLink); // 移除
 
-      const response = await axios.get(downUrl, {
-        responseType: 'blob', // 指定响应类型为二进制数据
-      });
+    const response = await axios.get(downUrl, {
+      responseType: 'blob', // 指定响应类型为二进制数据
+    })
 
-      // 创建一个Blob URL来下载文件
-      const blob = new Blob([response.data], { type: 'application/octet-stream' });
-      const url = window.URL.createObjectURL(blob);
+    // 创建一个Blob URL来下载文件
+    const blob = new Blob([response.data], { type: 'application/octet-stream' })
+    const url = window.URL.createObjectURL(blob)
 
-      // 创建一个隐藏的<a>标签来下载文件
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
+    // 创建一个隐藏的<a>标签来下载文件
+    const link = document.createElement('a')
+    link.href = url
+    link.download = fileName
+    document.body.appendChild(link)
+    link.click()
 
-      // 释放URL对象
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(link);
-
+    // 释放URL对象
+    window.URL.revokeObjectURL(url)
+    document.body.removeChild(link)
   }
 
   // 导航索引
   function changeIndex(value) {
-    proxy.$store.commit("setActiveNavName", value);
+    proxy.$store.commit('setActiveNavName', value)
   }
   // 路由管理
   function routerManager(routerName: string | number, options: routerOptions) {
     switch (routerName) {
       case RouterName.Search:
-        proxy.$router.push({ path: options.path, query: options.query });
-        break;
+        proxy.$router.push({ path: options.path, query: options.query })
+        break
       case RouterName.Home:
       case RouterName.SongSheet:
       case RouterName.SongSheetDetail:
@@ -137,13 +139,13 @@ export default function () {
       case RouterName.Lyric:
       case RouterName.Error:
       default:
-        proxy.$router.push({ path: options.path });
-        break;
+        proxy.$router.push({ path: options.path })
+        break
     }
   }
 
   function goBack(step = -1) {
-    proxy.$router.go(step);
+    proxy.$router.go(step)
   }
 
   return {
@@ -156,5 +158,5 @@ export default function () {
     routerManager,
     goBack,
     downloadMusic,
-  };
+  }
 }

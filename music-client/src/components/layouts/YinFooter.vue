@@ -1,3 +1,18 @@
+<script lang="ts">
+import { defineComponent, readonly } from 'vue'
+
+export default defineComponent({
+  setup() {
+    const footerList = readonly([
+      '关于 | 帮助 | 条款 | 反馈',
+      'Copyright © 2019 Yin-Hongwei',
+    ])
+
+    return { footerList }
+  },
+})
+</script>
+
 <template>
   <div class="yin-footer">
     <p v-for="(item, index) in footerList" :key="index">
@@ -5,21 +20,6 @@
     </p>
   </div>
 </template>
-
-<script lang="ts">
-import { defineComponent, readonly } from "vue";
-
-export default defineComponent({
-  setup() {
-    const footerList = readonly([
-      "关于 | 帮助 | 条款 | 反馈",
-      "Copyright © 2019 Yin-Hongwei",
-    ]);
-
-    return { footerList };
-  },
-});
-</script>
 
 <style lang="scss" scoped>
 @import "@/assets/css/var.scss";

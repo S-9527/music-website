@@ -1,3 +1,43 @@
+<script lang="ts">
+import { computed, defineComponent, onMounted, ref } from 'vue'
+import { useStore } from 'vuex'
+import { HttpManager } from '@/api'
+import SongList from '@/components/SongList.vue'
+import mixin from '@/mixins/mixin'
+import { getBirth } from '@/utils'
+
+export default defineComponent({
+  components: {
+    SongList,
+  },
+  setup() {
+    const store = useStore()
+    const { getUserSex } = mixin()
+
+    const currentSongList = ref([])
+    const songDetails = computed(() => store.getters.songDetails) as any
+
+    onMounted(async () => {
+      try {
+        const result = (await HttpManager.getSongOfSingerId(songDetails.value.id)) as ResponseBody
+        currentSongList.value = result.data
+      }
+      catch (error) {
+        console.error(error)
+      }
+    })
+
+    return {
+      songDetails,
+      currentSongList,
+      attachImageUrl: HttpManager.attachImageUrl,
+      getBirth,
+      getUserSex,
+    }
+  },
+})
+</script>
+
 <template>
   <el-container>
     <el-aside class="album-slide">
@@ -5,7 +45,9 @@
       <div class="album-info">
         <h2>基本资料</h2>
         <ul>
-          <li v-if="songDetails.sex !== 2">性别：{{ getUserSex(songDetails.sex) }}</li>
+          <li v-if="songDetails.sex !== 2">
+            性别：{{ getUserSex(songDetails.sex) }}
+          </li>
           <li>生日：{{ getBirth(songDetails.birth) }}</li>
           <li>故乡：{{ songDetails.location }}</li>
         </ul>
@@ -14,49 +56,10 @@
     <el-main class="album-main">
       <h1>{{ songDetails.name }}</h1>
       <p>{{ songDetails.introduction }}</p>
-      <song-list :songList="currentSongList"></song-list>
+      <SongList :song-list="currentSongList" />
     </el-main>
   </el-container>
 </template>
-
-<script lang="ts">
-import { defineComponent, ref, computed, onMounted } from "vue";
-import { useStore } from "vuex";
-import mixin from "@/mixins/mixin";
-import SongList from "@/components/SongList.vue";
-import { HttpManager } from "@/api";
-import { getBirth } from "@/utils";
-
-export default defineComponent({
-  components: {
-    SongList,
-  },
-  setup() {
-    const store = useStore();
-    const { getUserSex } = mixin();
-
-    const currentSongList = ref([]);
-    const songDetails = computed(() => store.getters.songDetails) as any;
-
-    onMounted(async () => {
-      try {
-        const result = (await HttpManager.getSongOfSingerId(songDetails.value.id)) as ResponseBody;
-        currentSongList.value = result.data;
-      } catch (error) {
-        console.error(error);
-      }
-    });
-
-    return {
-      songDetails,
-      currentSongList,
-      attachImageUrl: HttpManager.attachImageUrl,
-      getBirth,
-      getUserSex,
-    };
-  },
-});
-</script>
 
 <style lang="scss" scoped>
 @import "@/assets/css/var.scss";

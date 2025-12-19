@@ -1,114 +1,85 @@
-<template>
-  <div class="comment">
-    <h2 class="comment-title">
-      <span>评论</span>
-      <span class="comment-desc">共 {{ commentList.length }} 条评论</span>
-    </h2>
-    <el-input class="comment-input" type="textarea" placeholder="期待您的精彩评论..." :rows="2" v-model="textarea" />
-    <el-button class="sub-btn" type="primary" @click="submitComment()">发表评论</el-button>
-  </div>
-  <ul class="popular">
-    <li v-for="(item, index) in commentList" :key="index">
-      <el-image class="popular-img" fit="contain" :src="attachImageUrl(item.avator)" />
-      <div class="popular-msg">
-        <ul>
-          <li class="name">{{ item.username }}</li>
-          <li class="time">{{ formatDate(item.createTime) }}</li>
-          <li class="content">{{ item.content }}</li>
-        </ul>
-      </div>
-      <!--这特么是直接拿到了评论的id-->
-      <div ref="up" class="comment-ctr" @click="setSupport(item.id, item.up, userId)">
-        <div><yin-icon :icon="iconList.Support"></yin-icon> {{ item.up }}</div>
-        <el-icon v-if="item.userId === userId" @click="deleteComment(item.id, index)"><delete /></el-icon>
-      </div>
-    </li>
-  </ul>
-</template>
-
 <script lang="ts" setup>
+import { Delete } from '@element-plus/icons-vue'
+import { computed, defineProps, getCurrentInstance, onMounted, reactive, ref, toRefs, watch } from 'vue'
+import { useStore } from 'vuex'
 
-import { defineProps, getCurrentInstance, ref, toRefs, computed, watch, reactive, onMounted } from "vue";
-import { useStore } from "vuex";
-import { Delete } from "@element-plus/icons-vue";
-
-import YinIcon from "@/components/layouts/YinIcon.vue";
-import mixin from "@/mixins/mixin";
-import { HttpManager } from "@/api";
-import { Icon } from "@/enums";
-import { formatDate } from "@/utils";
-
-const { proxy } = getCurrentInstance();
-const store = useStore();
-const { checkStatus } = mixin();
-
-
+import { HttpManager } from '@/api'
+import YinIcon from '@/components/layouts/YinIcon.vue'
+import { Icon } from '@/enums'
+import mixin from '@/mixins/mixin'
+import { formatDate } from '@/utils'
 
 const props = defineProps({
   playId: Number || String, // 歌曲ID 或 歌单ID
   type: Number, // 歌单 1 / 歌曲 0
-});
+})
+const { proxy } = getCurrentInstance()
+const store = useStore()
+const { checkStatus } = mixin()
 
-const { playId, type } = toRefs(props);
-const textarea = ref(""); // 存放输入内容
-const commentList = ref([]); // 存放评论内容
+const { playId, type } = toRefs(props)
+const textarea = ref('') // 存放输入内容
+const commentList = ref([]) // 存放评论内容
 const iconList = reactive({
   Support: Icon.Support,
-});
+})
 
-const userId = computed(() => store.getters.userId);
-const songId = computed(() => store.getters.songId);
+const userId = computed(() => store.getters.userId)
+const songId = computed(() => store.getters.songId)
 
 watch(songId, () => {
-  getComment(songId.value);
-});
+  getComment(songId.value)
+})
 
 onMounted(() => {
-  getComment(playId.value);
-});
+  getComment(playId.value)
+})
 
 // 获取所有评论
 async function getComment(id) {
   try {
-    const result = (await HttpManager.getAllComment(type.value, id)) as ResponseBody;
-    commentList.value = result.data;
+    const result = (await HttpManager.getAllComment(type.value, id)) as ResponseBody
+    commentList.value = result.data
     for (let index = 0; index < commentList.value.length; index++) {
       // 获取评论用户的昵称和头像
-      const resultUser = (await HttpManager.getUserOfId(commentList.value[index].userId)) as ResponseBody;
-      commentList.value[index].avator = resultUser.data[0].avator;
-      commentList.value[index].username = resultUser.data[0].username;
+      const resultUser = (await HttpManager.getUserOfId(commentList.value[index].userId)) as ResponseBody
+      commentList.value[index].avator = resultUser.data[0].avator
+      commentList.value[index].username = resultUser.data[0].username
     }
-  } catch (error) {
-    console.error('[获取所有评论失败]===>', error);
+  }
+  catch (error) {
+    console.error('[获取所有评论失败]===>', error)
   }
 }
 
 // 提交评论
 async function submitComment() {
-  if (!checkStatus()) return;
+  if (!checkStatus())
+    return
 
   // 0 代表歌曲， 1 代表歌单
-  let songListId = null;
-  let songId = null;
-  let nowType = null;
+  let songListId = null
+  let songId = null
+  let nowType = null
   if (type.value === 1) {
-    nowType = 1;
-    songListId = `${playId.value}`;
-  } else if (type.value === 0) {
-    nowType = 0;
-    songId = `${playId.value}`;
+    nowType = 1
+    songListId = `${playId.value}`
+  }
+  else if (type.value === 0) {
+    nowType = 0
+    songId = `${playId.value}`
   }
 
-  const content = textarea.value;
+  const content = textarea.value
   const result = (await HttpManager.setComment({ userId: userId.value, content, songId, songListId, nowType })) as ResponseBody;
   (proxy as any).$message({
     message: result.message,
     type: result.type,
-  });
+  })
 
   if (result.success) {
-    textarea.value = "";
-    await getComment(playId.value);
+    textarea.value = ''
+    await getComment(playId.value)
   }
 }
 
@@ -118,43 +89,84 @@ async function deleteComment(id, index) {
   (proxy as any).$message({
     message: result.message,
     type: result.type,
-  });
+  })
 
-  if (result.success) commentList.value.splice(index, 1);
+  if (result.success)
+    commentList.value.splice(index, 1)
 }
 
 // 点赞  还得再查一下
 async function setSupport(id, up, userId) {
-  if (!checkStatus()) return;
+  if (!checkStatus())
+    return
 
-  let result = null;
-  let operatorR = null;
-  const commentId = id;
-  //当然可以这么左 直接在判断的时候 进行点赞或者取消
+  let result = null
+  let operatorR = null
+  const commentId = id
+  // 当然可以这么左 直接在判断的时候 进行点赞或者取消
   const r = (await HttpManager.testAlreadySupport({ commentId, userId })) as ResponseBody;
   (proxy as any).$message({
     message: r.message,
     type: r.type,
     date: r.data,
-  });
+  })
 
   if (r.data) {
-    up = up - 1;
-    operatorR = (await HttpManager.deleteUserSupport({ commentId, userId })) as ResponseBody;
-    result = (await HttpManager.setSupport({ id, up })) as ResponseBody;
-  } else {
-    up = up + 1;
-    operatorR = (await HttpManager.insertUserSupport({ commentId, userId })) as ResponseBody;
-    result = (await HttpManager.setSupport({ id, up })) as ResponseBody;
+    up = up - 1
+    operatorR = (await HttpManager.deleteUserSupport({ commentId, userId })) as ResponseBody
+    result = (await HttpManager.setSupport({ id, up })) as ResponseBody
+  }
+  else {
+    up = up + 1
+    operatorR = (await HttpManager.insertUserSupport({ commentId, userId })) as ResponseBody
+    result = (await HttpManager.setSupport({ id, up })) as ResponseBody
   }
   if (result.success && operatorR.success) {
     // proxy.$refs.up[index].children[0].style.color = "#2796dd";
-    await getComment(playId.value);
+    await getComment(playId.value)
   }
 }
 
-const attachImageUrl = HttpManager.attachImageUrl;
+const attachImageUrl = HttpManager.attachImageUrl
 </script>
+
+<template>
+  <div class="comment">
+    <h2 class="comment-title">
+      <span>评论</span>
+      <span class="comment-desc">共 {{ commentList.length }} 条评论</span>
+    </h2>
+    <el-input v-model="textarea" class="comment-input" type="textarea" placeholder="期待您的精彩评论..." :rows="2" />
+    <el-button class="sub-btn" type="primary" @click="submitComment()">
+      发表评论
+    </el-button>
+  </div>
+  <ul class="popular">
+    <li v-for="(item, index) in commentList" :key="index">
+      <el-image class="popular-img" fit="contain" :src="attachImageUrl(item.avator)" />
+      <div class="popular-msg">
+        <ul>
+          <li class="name">
+            {{ item.username }}
+          </li>
+          <li class="time">
+            {{ formatDate(item.createTime) }}
+          </li>
+          <li class="content">
+            {{ item.content }}
+          </li>
+        </ul>
+      </div>
+      <!-- 这特么是直接拿到了评论的id -->
+      <div ref="up" class="comment-ctr" @click="setSupport(item.id, item.up, userId)">
+        <div><YinIcon :icon="iconList.Support" /> {{ item.up }}</div>
+        <el-icon v-if="item.userId === userId" @click="deleteComment(item.id, index)">
+          <Delete />
+        </el-icon>
+      </div>
+    </li>
+  </ul>
+</template>
 
 <style lang="scss" scoped>
 @import "@/assets/css/var.scss";

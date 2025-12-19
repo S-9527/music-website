@@ -1,7 +1,7 @@
-import { createStore } from "vuex";
-import configure from "./configure";
-import user from "./user";
-import song from "./song";
+import { createStore } from 'vuex'
+import configure from './configure'
+import song from './song'
+import user from './user'
 
 export default createStore({
   modules: {
@@ -9,4 +9,4 @@ export default createStore({
     user,
     song,
   },
-});
+})

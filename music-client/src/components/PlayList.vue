@@ -1,27 +1,10 @@
-<template>
-  <div class="play-list">
-    <div class="play-title" v-if="title">{{ title }}</div>
-    <ul class="play-body">
-      <li class="card-frame" v-for="(item, index) in playList" :key="index">
-        <div class="card" @click="goAblum(item)">
-          <el-image class="card-img" fit="contain" :src="attachImageUrl(item.pic)" />
-          <div class="mask" @click="goAblum(item)">
-            <yin-icon class="mask-icon" :icon="BOFANG"></yin-icon>
-          </div>
-        </div>
-        <p class="card-name">{{ item.name || item.title }}</p>
-      </li>
-    </ul>
-  </div>
-</template>
-
 <script lang="ts">
-import { defineComponent, getCurrentInstance, toRefs } from "vue";
+import { defineComponent, getCurrentInstance, toRefs } from 'vue'
 
-import YinIcon from "@/components/layouts/YinIcon.vue";
-import mixin from "@/mixins/mixin";
-import { Icon } from "@/enums";
-import { HttpManager } from "@/api";
+import { HttpManager } from '@/api'
+import YinIcon from '@/components/layouts/YinIcon.vue'
+import { Icon } from '@/enums'
+import mixin from '@/mixins/mixin'
 
 export default defineComponent({
   components: {
@@ -33,24 +16,45 @@ export default defineComponent({
     path: String,
   },
   setup(props) {
-    const { proxy } = getCurrentInstance();
-    const { routerManager } = mixin();
+    const { proxy } = getCurrentInstance()
+    const { routerManager } = mixin()
 
-    const { path } = toRefs(props);
+    const { path } = toRefs(props)
 
     function goAblum(item) {
-      proxy.$store.commit("setSongDetails", item);
-      routerManager(path.value, { path: `/${path.value}/${item.id}` });
+      proxy.$store.commit('setSongDetails', item)
+      routerManager(path.value, { path: `/${path.value}/${item.id}` })
     }
 
     return {
       BOFANG: Icon.BOFANG,
       goAblum,
       attachImageUrl: HttpManager.attachImageUrl,
-    };
+    }
   },
-});
+})
 </script>
+
+<template>
+  <div class="play-list">
+    <div v-if="title" class="play-title">
+      {{ title }}
+    </div>
+    <ul class="play-body">
+      <li v-for="(item, index) in playList" :key="index" class="card-frame">
+        <div class="card" @click="goAblum(item)">
+          <el-image class="card-img" fit="contain" :src="attachImageUrl(item.pic)" />
+          <div class="mask" @click="goAblum(item)">
+            <YinIcon class="mask-icon" :icon="BOFANG" />
+          </div>
+        </div>
+        <p class="card-name">
+          {{ item.name || item.title }}
+        </p>
+      </li>
+    </ul>
+  </div>
+</template>
 
 <style lang="scss" scoped>
 @import "@/assets/css/var.scss";

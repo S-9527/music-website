@@ -1,41 +1,11 @@
-<template>
-  <div class="content">
-    <el-table highlight-current-row :data="dataList" @row-click="handleClick">
-      <el-table-column prop="songName" label="歌曲" />
-      <el-table-column prop="singerName" label="歌手" />
-      <el-table-column prop="introduction" label="专辑" />
-      <el-table-column label="编辑" width="80" align="center">
-        <template #default="scope">
-          <el-dropdown>
-            <el-icon @click="handleEdit(scope.row)"><MoreFilled /></el-icon>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item
-                  :icon="Download"
-                  @click="
-                    downloadMusic({
-                      songUrl: scope.row.url,
-                      songName: scope.row.name,
-                    })
-                  ">下载</el-dropdown-item>
-                <el-dropdown-item :icon="Delete" v-if="show" @click="deleteCollection({ id: scope.row.id })">删除</el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
-        </template>
-      </el-table-column>
-    </el-table>
-  </div>
-</template>
-
 <script lang="ts">
-import { defineComponent, getCurrentInstance, toRefs, computed, reactive } from "vue";
-import { useStore } from "vuex";
-import { MoreFilled, Delete, Download } from "@element-plus/icons-vue";
+import { Delete, Download, MoreFilled } from '@element-plus/icons-vue'
+import { computed, defineComponent, getCurrentInstance, reactive, toRefs } from 'vue'
+import { useStore } from 'vuex'
 
-import mixin from "@/mixins/mixin";
-import { HttpManager } from "@/api";
-import { Icon } from "@/enums";
+import { HttpManager } from '@/api'
+import { Icon } from '@/enums'
+import mixin from '@/mixins/mixin'
 
 export default defineComponent({
   components: {
@@ -44,35 +14,35 @@ export default defineComponent({
   props: {
     songList: Array,
     show: {
-      default: false
-    }
+      default: false,
+    },
   },
-  emits: ["changeData"],
+  emits: ['changeData'],
   setup(props) {
-    const { getSongTitle, getSingerName, playMusic, checkStatus, downloadMusic } = mixin();
-    const { proxy } = getCurrentInstance();
-    const store = useStore();
+    const { getSongTitle, getSingerName, playMusic, checkStatus, downloadMusic } = mixin()
+    const { proxy } = getCurrentInstance()
+    const store = useStore()
 
-    const { songList } = toRefs(props);
+    const { songList } = toRefs(props)
 
     const iconList = reactive({
       dislike: Icon.Dislike,
       like: Icon.Like,
-    });
+    })
 
-    const songUrl = computed(() => store.getters.songUrl);
-    const singerName = computed(() => store.getters.singerName);
-    const songTitle = computed(() => store.getters.songTitle);
+    const songUrl = computed(() => store.getters.songUrl)
+    const singerName = computed(() => store.getters.singerName)
+    const songTitle = computed(() => store.getters.songTitle)
     const dataList = computed(() => {
-      const list = [];
+      const list = []
       songList.value.forEach((item: any, index) => {
-        item["songName"] = getSongTitle(item.name);
-        item["singerName"] = getSingerName(item.name);
-        item["index"] = index;
-        list.push(item);
-      });
-      return list;
-    });
+        item.songName = getSongTitle(item.name)
+        item.singerName = getSingerName(item.name)
+        item.index = index
+        list.push(item)
+      })
+      return list
+    })
 
     function handleClick(row) {
       playMusic({
@@ -83,25 +53,27 @@ export default defineComponent({
         name: row.name,
         lyric: row.lyric,
         currentSongList: songList.value,
-      });
+      })
     }
 
     function handleEdit(row) {
-      console.log("row", row);
+      console.log('row', row)
     }
 
-    const userId = computed(() => store.getters.userId);
+    const userId = computed(() => store.getters.userId)
 
     async function deleteCollection({ id }) {
-      if (!checkStatus()) return;
+      if (!checkStatus())
+        return
 
       const result = (await HttpManager.deleteCollection(userId.value, id)) as ResponseBody;
       (proxy as any).$message({
         message: result.message,
         type: result.type,
-      });
+      })
 
-      if (result.data === false) proxy.$emit("changeData", result.data);
+      if (result.data === false)
+        proxy.$emit('changeData', result.data)
     }
 
     return {
@@ -116,10 +88,47 @@ export default defineComponent({
       handleEdit,
       downloadMusic,
       deleteCollection,
-    };
+    }
   },
-});
+})
 </script>
+
+<template>
+  <div class="content">
+    <el-table highlight-current-row :data="dataList" @row-click="handleClick">
+      <el-table-column prop="songName" label="歌曲" />
+      <el-table-column prop="singerName" label="歌手" />
+      <el-table-column prop="introduction" label="专辑" />
+      <el-table-column label="编辑" width="80" align="center">
+        <template #default="scope">
+          <el-dropdown>
+            <el-icon @click="handleEdit(scope.row)">
+              <MoreFilled />
+            </el-icon>
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item
+                  :icon="Download"
+                  @click="
+                    downloadMusic({
+                      songUrl: scope.row.url,
+                      songName: scope.row.name,
+                    })
+                  "
+                >
+                  下载
+                </el-dropdown-item>
+                <el-dropdown-item v-if="show" :icon="Delete" @click="deleteCollection({ id: scope.row.id })">
+                  删除
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
+        </template>
+      </el-table-column>
+    </el-table>
+  </div>
+</template>
 
 <style lang="scss" scoped>
 @import "@/assets/css/var.scss";

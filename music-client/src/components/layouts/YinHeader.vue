@@ -1,37 +1,12 @@
-<template>
-  <div class="yin-header">
-    <!--图标-->
-    <div class="header-logo" @click="goPage()">
-      <yin-icon :icon="iconList.ERJI"></yin-icon>
-      <span>{{ musicName }}</span>
-    </div>
-    <yin-header-nav class="yin-header-nav" :styleList="headerNavList" :activeName="activeNavName" @click="goPage"></yin-header-nav>
-    <!--搜索框-->
-    <div class="header-search">
-      <el-input placeholder="搜索" :prefix-icon="Search" v-model="keywords" @keyup.enter="goSearch()" />
-    </div>
-    <!--设置-->
-    <yin-header-nav v-if="!token" :styleList="signList" :activeName="activeNavName" @click="goPage"></yin-header-nav>
-    <el-dropdown class="user-wrap" v-if="token" trigger="click">
-      <el-image class="user" fit="contain" :src="attachImageUrl(userPic)" />
-      <template #dropdown>
-        <el-dropdown-menu>
-          <el-dropdown-item v-for="(item, index) in menuList" :key="index" @click.stop="goMenuList(item.path)">{{ item.name }}</el-dropdown-item>
-        </el-dropdown-menu>
-      </template>
-    </el-dropdown>
-  </div>
-</template>
-
 <script lang="ts">
-import { defineComponent, ref, getCurrentInstance, computed, reactive } from "vue";
-import { Search } from "@element-plus/icons-vue";
-import { useStore } from "vuex";
-import YinIcon from "./YinIcon.vue";
-import YinHeaderNav from "./YinHeaderNav.vue";
-import mixin from "@/mixins/mixin";
-import { HEADERNAVLIST, SIGNLIST, MENULIST, Icon, MUSICNAME, RouterName, NavName } from "@/enums";
-import { HttpManager } from "@/api";
+import { Search } from '@element-plus/icons-vue'
+import { computed, defineComponent, getCurrentInstance, reactive, ref } from 'vue'
+import { useStore } from 'vuex'
+import { HttpManager } from '@/api'
+import { HEADERNAVLIST, Icon, MENULIST, MUSICNAME, NavName, RouterName, SIGNLIST } from '@/enums'
+import mixin from '@/mixins/mixin'
+import YinHeaderNav from './YinHeaderNav.vue'
+import YinIcon from './YinIcon.vue'
 
 export default defineComponent({
   components: {
@@ -39,50 +14,53 @@ export default defineComponent({
     YinHeaderNav,
   },
   setup() {
-    const { proxy } = getCurrentInstance();
-    const store = useStore();
-    const { changeIndex, routerManager } = mixin();
+    const { proxy } = getCurrentInstance()
+    const store = useStore()
+    const { changeIndex, routerManager } = mixin()
 
-    const musicName = ref(MUSICNAME);
-    const headerNavList = ref(HEADERNAVLIST); // 左侧导航栏
-    const signList = ref(SIGNLIST); // 右侧导航栏
-    const menuList = ref(MENULIST); // 用户下拉菜单项
+    const musicName = ref(MUSICNAME)
+    const headerNavList = ref(HEADERNAVLIST) // 左侧导航栏
+    const signList = ref(SIGNLIST) // 右侧导航栏
+    const menuList = ref(MENULIST) // 用户下拉菜单项
     const iconList = reactive({
       ERJI: Icon.ERJI,
-    });
-    const keywords = ref("");
-    const activeNavName = computed(() => store.getters.activeNavName);
-    const userPic = computed(() => store.getters.userPic);
-    const token = computed(() => store.getters.token);
+    })
+    const keywords = ref('')
+    const activeNavName = computed(() => store.getters.activeNavName)
+    const userPic = computed(() => store.getters.userPic)
+    const token = computed(() => store.getters.token)
 
     function goPage(path, name) {
       if (!path && !name) {
-        changeIndex(NavName.Home);
-        routerManager(RouterName.Home, { path: RouterName.Home });
-      } else {
-        changeIndex(name);
-        routerManager(path, { path });
+        changeIndex(NavName.Home)
+        routerManager(RouterName.Home, { path: RouterName.Home })
+      }
+      else {
+        changeIndex(name)
+        routerManager(path, { path })
       }
     }
 
     function goMenuList(path) {
       if (path == RouterName.SignOut) {
-        proxy.$store.commit("setToken", false);
-        changeIndex(NavName.Home);
-        routerManager(RouterName.Home, { path: RouterName.Home });
-      } else {
-        routerManager(path, { path });
+        proxy.$store.commit('setToken', false)
+        changeIndex(NavName.Home)
+        routerManager(RouterName.Home, { path: RouterName.Home })
+      }
+      else {
+        routerManager(path, { path })
       }
     }
     function goSearch() {
-      if (keywords.value !== "") {
-        proxy.$store.commit("setSearchWord", keywords.value);
-        routerManager(RouterName.Search, { path: RouterName.Search, query: { keywords: keywords.value } });
-      } else {
+      if (keywords.value !== '') {
+        proxy.$store.commit('setSearchWord', keywords.value)
+        routerManager(RouterName.Search, { path: RouterName.Search, query: { keywords: keywords.value } })
+      }
+      else {
         (proxy as any).$message({
-          message: "搜索内容不能为空",
-          type: "error",
-        });
+          message: '搜索内容不能为空',
+          type: 'error',
+        })
       }
     }
 
@@ -101,10 +79,37 @@ export default defineComponent({
       goMenuList,
       goSearch,
       attachImageUrl: HttpManager.attachImageUrl,
-    };
+    }
   },
-});
+})
 </script>
+
+<template>
+  <div class="yin-header">
+    <!-- 图标 -->
+    <div class="header-logo" @click="goPage()">
+      <YinIcon :icon="iconList.ERJI" />
+      <span>{{ musicName }}</span>
+    </div>
+    <YinHeaderNav class="yin-header-nav" :style-list="headerNavList" :active-name="activeNavName" @click="goPage" />
+    <!-- 搜索框 -->
+    <div class="header-search">
+      <el-input v-model="keywords" placeholder="搜索" :prefix-icon="Search" @keyup.enter="goSearch()" />
+    </div>
+    <!-- 设置 -->
+    <YinHeaderNav v-if="!token" :style-list="signList" :active-name="activeNavName" @click="goPage" />
+    <el-dropdown v-if="token" class="user-wrap" trigger="click">
+      <el-image class="user" fit="contain" :src="attachImageUrl(userPic)" />
+      <template #dropdown>
+        <el-dropdown-menu>
+          <el-dropdown-item v-for="(item, index) in menuList" :key="index" @click.stop="goMenuList(item.path)">
+            {{ item.name }}
+          </el-dropdown-item>
+        </el-dropdown-menu>
+      </template>
+    </el-dropdown>
+  </div>
+</template>
 
 <style lang="scss" scoped>
 @import "@/assets/css/var.scss";

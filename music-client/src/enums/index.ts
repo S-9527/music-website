@@ -1,24 +1,24 @@
-import { AREA } from "./area";
-import { Icon } from "./icon";
-import { MUSICNAME } from "./music-name";
-import { NavName, HEADERNAVLIST, SIGNLIST, MENULIST } from "./nav";
-import { singerStyle } from "./singer";
-import { SONGSTYLE } from "./songList";
-import { RouterName } from "./router-name";
-import { validatePassword, SignInRules, SignUpRules } from "./validate";
+import { AREA } from './area'
+import { Icon } from './icon'
+import { MUSICNAME } from './music-name'
+import { HEADERNAVLIST, MENULIST, NavName, SIGNLIST } from './nav'
+import { RouterName } from './router-name'
+import { singerStyle } from './singer'
+import { SONGSTYLE } from './songList'
+import { SignInRules, SignUpRules, validatePassword } from './validate'
 
 export {
   AREA,
+  HEADERNAVLIST,
   Icon,
+  MENULIST,
   MUSICNAME,
   NavName,
-  HEADERNAVLIST,
   RouterName,
+  SignInRules,
   SIGNLIST,
-  MENULIST,
+  SignUpRules,
   singerStyle,
   SONGSTYLE,
   validatePassword,
-  SignInRules,
-  SignUpRules,
-};
+}

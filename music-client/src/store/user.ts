@@ -1,23 +1,23 @@
 export default {
   state: {
-    userId: "", // ID
-    username: "", // 名字
-    userPic: "", // 图片
+    userId: '', // ID
+    username: '', // 名字
+    userPic: '', // 图片
   },
   getters: {
-    userId: (state) => state.userId,
-    username: (state) => state.username,
-    userPic: (state) => state.userPic,
+    userId: state => state.userId,
+    username: state => state.username,
+    userPic: state => state.userPic,
   },
   mutations: {
     setUserId: (state, userId) => {
-      state.userId = userId;
+      state.userId = userId
     },
     setUsername: (state, username) => {
-      state.username = username;
+      state.username = username
     },
     setUserPic: (state, userPic) => {
-      state.userPic = userPic;
+      state.userPic = userPic
     },
   },
-};
+}

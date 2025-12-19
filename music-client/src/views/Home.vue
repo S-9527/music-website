@@ -1,49 +1,49 @@
-<template>
-  <!--轮播图-->
-  <el-carousel v-if="swiperList.length" class="swiper-container" type="card" height="20vw" :interval="4000">
-    <el-carousel-item v-for="(item, index) in swiperList" :key="index">
-      <img :src="HttpManager.attachImageUrl(item.pic)" />
-    </el-carousel-item>
-  </el-carousel>
-  <!--热门歌单-->
-  <play-list class="play-list-container" title="歌单" path="song-sheet-detail" :playList="songList"></play-list>
-  <!--热门歌手-->
-  <play-list class="play-list-container" title="歌手" path="singer-detail" :playList="singerList"></play-list>
-</template>
-
 <script lang="ts" setup>
-import { ref, onMounted } from "vue";
+import { onMounted, ref } from 'vue'
 
-import PlayList from "@/components/PlayList.vue";
-import {  NavName } from "@/enums";
-import { HttpManager } from "@/api";
-import mixin from "@/mixins/mixin";
+import { HttpManager } from '@/api'
+import PlayList from '@/components/PlayList.vue'
+import { NavName } from '@/enums'
+import mixin from '@/mixins/mixin'
 
-const songList = ref([]); // 歌单列表
-const singerList = ref([]); // 歌手列表
-const swiperList = ref([]);// 轮播图 每次都在进行查询
-const { changeIndex } = mixin();
+const songList = ref([]) // 歌单列表
+const singerList = ref([]) // 歌手列表
+const swiperList = ref([])// 轮播图 每次都在进行查询
+const { changeIndex } = mixin()
 try {
-
   HttpManager.getBannerList().then((res) => {
-    swiperList.value = (res as ResponseBody).data.sort();
-  });
+    swiperList.value = (res as ResponseBody).data.sort()
+  })
 
   HttpManager.getSongList().then((res) => {
-    songList.value = (res as ResponseBody).data.sort().slice(0, 10);
-  });
+    songList.value = (res as ResponseBody).data.sort().slice(0, 10)
+  })
 
   HttpManager.getAllSinger().then((res) => {
-    singerList.value = (res as ResponseBody).data.sort().slice(0, 10);
-  });
+    singerList.value = (res as ResponseBody).data.sort().slice(0, 10)
+  })
 
   onMounted(() => {
-    changeIndex(NavName.Home);
-  });
-} catch (error) {
-  console.error(error);
+    changeIndex(NavName.Home)
+  })
+}
+catch (error) {
+  console.error(error)
 }
 </script>
+
+<template>
+  <!-- 轮播图 -->
+  <el-carousel v-if="swiperList.length" class="swiper-container" type="card" height="20vw" :interval="4000">
+    <el-carousel-item v-for="(item, index) in swiperList" :key="index">
+      <img :src="HttpManager.attachImageUrl(item.pic)">
+    </el-carousel-item>
+  </el-carousel>
+  <!-- 热门歌单 -->
+  <PlayList class="play-list-container" title="歌单" path="song-sheet-detail" :play-list="songList" />
+  <!-- 热门歌手 -->
+  <PlayList class="play-list-container" title="歌手" path="singer-detail" :play-list="singerList" />
+</template>
 
 <style lang="scss" scoped>
 @import "@/assets/css/var.scss";

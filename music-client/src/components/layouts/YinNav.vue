@@ -1,3 +1,25 @@
+<script lang="ts">
+import { defineComponent, getCurrentInstance } from 'vue'
+
+export default defineComponent({
+  props: {
+    styleList: Array,
+    activeName: String,
+  },
+  emits: ['click'],
+  setup() {
+    const { proxy } = getCurrentInstance()
+
+    function handleChangeView(val) {
+      proxy.$emit('click', val)
+    }
+    return {
+      handleChangeView,
+    }
+  },
+})
+</script>
+
 <template>
   <ul class="yin-nav">
     <li v-for="(item, index) in styleList" :key="index" :class="{ active: item.name == activeName }" @click="handleChangeView(item)">
@@ -5,28 +27,6 @@
     </li>
   </ul>
 </template>
-
-<script lang="ts">
-import { defineComponent, getCurrentInstance } from "vue";
-
-export default defineComponent({
-  props: {
-    styleList: Array,
-    activeName: String,
-  },
-  emits: ["click"],
-  setup() {
-    const { proxy } = getCurrentInstance();
-
-    function handleChangeView(val) {
-      proxy.$emit("click", val);
-    }
-    return {
-      handleChangeView,
-    };
-  },
-});
-</script>
 
 <style lang="scss" scoped>
 @import "@/assets/css/var.scss";

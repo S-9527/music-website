@@ -1,6 +1,8 @@
 <template>
   <div class="error-page">
-    <div class="error-code">404</div>
+    <div class="error-code">
+      404
+    </div>
   </div>
 </template>
 

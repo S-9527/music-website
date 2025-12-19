@@ -1,33 +1,12 @@
-<template>
-  <div class="personal">
-    <div class="personal-info">
-      <div class="personal-img" @click="dialogTableVisible = true">
-        <el-image fit="contain" :src="attachImageUrl(userPic)"/>
-      </div>
-      <div class="personal-msg">
-        <div class="username">{{ personalInfo.username }}</div>
-        <div class="introduction">{{ personalInfo.introduction }}</div>
-      </div>
-      <el-button class="edit-info" round :icon="Edit" @click="goPage()">修改个人信息</el-button>
-    </div>
-    <div class="personal-body">
-      <song-list :songList="collectSongList" :show="true" @changeData="changeData"></song-list>
-    </div>
-    <el-dialog v-model="dialogTableVisible" title="修改头像">
-      <upload></upload>
-    </el-dialog>
-  </div>
-</template>
-
 <script lang="ts">
-import { defineComponent, nextTick, ref, computed, watch, reactive } from "vue";
-import { useStore } from "vuex";
-import { Edit } from "@element-plus/icons-vue";
-import SongList from "@/components/SongList.vue";
-import Upload from "../setting/Upload.vue";
-import mixin from "@/mixins/mixin";
-import { HttpManager } from "@/api";
-import { RouterName } from "@/enums";
+import { Edit } from '@element-plus/icons-vue'
+import { computed, defineComponent, nextTick, reactive, ref, watch } from 'vue'
+import { useStore } from 'vuex'
+import { HttpManager } from '@/api'
+import SongList from '@/components/SongList.vue'
+import { RouterName } from '@/enums'
+import mixin from '@/mixins/mixin'
+import Upload from '../setting/Upload.vue'
 
 export default defineComponent({
   components: {
@@ -35,61 +14,61 @@ export default defineComponent({
     Upload,
   },
   setup() {
-    const store = useStore();
+    const store = useStore()
 
-    const { routerManager } = mixin();
+    const { routerManager } = mixin()
 
-    const dialogTableVisible = ref(false);
-    const collectSongList = ref([]); // 收藏的歌曲
+    const dialogTableVisible = ref(false)
+    const collectSongList = ref([]) // 收藏的歌曲
     const personalInfo = reactive({
-      username: "",
-      userSex: "",
-      birth: "",
-      location: "",
-      introduction: "",
-    });
-    const userId = computed(() => store.getters.userId);
-    const userPic = computed(() => store.getters.userPic);
+      username: '',
+      userSex: '',
+      birth: '',
+      location: '',
+      introduction: '',
+    })
+    const userId = computed(() => store.getters.userId)
+    const userPic = computed(() => store.getters.userPic)
     watch(userPic, () => {
-      dialogTableVisible.value = false;
-    });
+      dialogTableVisible.value = false
+    })
 
     function goPage() {
-      routerManager(RouterName.Setting, { path: RouterName.Setting });
+      routerManager(RouterName.Setting, { path: RouterName.Setting })
     }
     async function getUserInfo(id) {
-      const result = (await HttpManager.getUserOfId(id)) as ResponseBody;
-      personalInfo.username = result.data[0].username;
-      personalInfo.userSex = result.data[0].sex;
-      personalInfo.birth = result.data[0].birth;
-      personalInfo.introduction = result.data[0].introduction;
-      personalInfo.location = result.data[0].location;
+      const result = (await HttpManager.getUserOfId(id)) as ResponseBody
+      personalInfo.username = result.data[0].username
+      personalInfo.userSex = result.data[0].sex
+      personalInfo.birth = result.data[0].birth
+      personalInfo.introduction = result.data[0].introduction
+      personalInfo.location = result.data[0].location
     }
     // 获取收藏的歌曲
     async function getCollection(userId) {
       collectSongList.value = []
-      const result = (await HttpManager.getCollectionOfUser(userId)) as ResponseBody;
-      const collectIDList = result.data || []; // 存放收藏的歌曲ID
+      const result = (await HttpManager.getCollectionOfUser(userId)) as ResponseBody
+      const collectIDList = result.data || [] // 存放收藏的歌曲ID
       // 通过歌曲ID获取歌曲信息
       for (const item of collectIDList) {
         if (!item.songId) {
-          console.error(`歌曲${item}异常`);
-          continue;
+          console.error(`歌曲${item}异常`)
+          continue
         }
 
-        const result = (await HttpManager.getSongOfId(item.songId)) as ResponseBody;
-        collectSongList.value.push(result.data[0]);
+        const result = (await HttpManager.getSongOfId(item.songId)) as ResponseBody
+        collectSongList.value.push(result.data[0])
       }
     }
 
     function changeData() {
-      getCollection(userId.value);
+      getCollection(userId.value)
     }
 
     nextTick(() => {
-      getUserInfo(userId.value);
-      getCollection(userId.value);
-    });
+      getUserInfo(userId.value)
+      getCollection(userId.value)
+    })
 
     return {
       Edit,
@@ -100,10 +79,37 @@ export default defineComponent({
       attachImageUrl: HttpManager.attachImageUrl,
       goPage,
       changeData,
-    };
+    }
   },
-});
+})
 </script>
+
+<template>
+  <div class="personal">
+    <div class="personal-info">
+      <div class="personal-img" @click="dialogTableVisible = true">
+        <el-image fit="contain" :src="attachImageUrl(userPic)" />
+      </div>
+      <div class="personal-msg">
+        <div class="username">
+          {{ personalInfo.username }}
+        </div>
+        <div class="introduction">
+          {{ personalInfo.introduction }}
+        </div>
+      </div>
+      <el-button class="edit-info" round :icon="Edit" @click="goPage()">
+        修改个人信息
+      </el-button>
+    </div>
+    <div class="personal-body">
+      <SongList :song-list="collectSongList" :show="true" @change-data="changeData" />
+    </div>
+    <el-dialog v-model="dialogTableVisible" title="修改头像">
+      <Upload />
+    </el-dialog>
+  </div>
+</template>
 
 <style lang="scss" scoped>
 @import "@/assets/css/var.scss";

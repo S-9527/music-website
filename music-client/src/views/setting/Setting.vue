@@ -1,29 +1,12 @@
-<template>
-  <div class="setting">
-    <h1>设置</h1>
-    <el-tabs tab-position="left">
-      <el-tab-pane label="个人资料" class="content">
-        <Personal-data></Personal-data>
-      </el-tab-pane>
-      <el-tab-pane label="更改密码" class="content">
-        <Password></Password>
-      </el-tab-pane>
-      <el-tab-pane label="账号和安全" class="content">
-        <el-button type="danger" :icon="Delete" @click="cancelAccount">注销账号</el-button>
-      </el-tab-pane>
-    </el-tabs>
-  </div>
-</template>
-
 <script lang="ts">
-import { defineComponent, getCurrentInstance, computed, reactive } from "vue";
-import { Delete } from "@element-plus/icons-vue";
-import PersonalData from "./PersonalData.vue";
-import Password from "./Password.vue";
-import { HttpManager } from "@/api";
-import { useStore } from "vuex";
-import mixin from "@/mixins/mixin";
-import { RouterName } from "@/enums";
+import { Delete } from '@element-plus/icons-vue'
+import { computed, defineComponent, getCurrentInstance } from 'vue'
+import { useStore } from 'vuex'
+import { HttpManager } from '@/api'
+import { RouterName } from '@/enums'
+import mixin from '@/mixins/mixin'
+import Password from './Password.vue'
+import PersonalData from './PersonalData.vue'
 
 export default defineComponent({
   components: {
@@ -31,29 +14,48 @@ export default defineComponent({
     Password,
   },
   setup() {
-    const { proxy } = getCurrentInstance();
-    const store = useStore();
-    const { routerManager } = mixin();
+    const { proxy } = getCurrentInstance()
+    const store = useStore()
+    const { routerManager } = mixin()
 
-    const userId = computed(() => store.getters.userId);
+    const userId = computed(() => store.getters.userId)
 
     async function cancelAccount() {
       const result = (await HttpManager.deleteUser(userId.value)) as ResponseBody;
       (proxy as any).$message({
         message: result.message,
         type: result.type,
-      });
-      routerManager(RouterName.SignIn, { path: RouterName.SignIn });
-      proxy.$store.commit("setToken", false);
+      })
+      routerManager(RouterName.SignIn, { path: RouterName.SignIn })
+      proxy.$store.commit('setToken', false)
     }
 
     return {
       Delete,
       cancelAccount,
-    };
+    }
   },
-});
+})
 </script>
+
+<template>
+  <div class="setting">
+    <h1>设置</h1>
+    <el-tabs tab-position="left">
+      <el-tab-pane label="个人资料" class="content">
+        <PersonalData />
+      </el-tab-pane>
+      <el-tab-pane label="更改密码" class="content">
+        <Password />
+      </el-tab-pane>
+      <el-tab-pane label="账号和安全" class="content">
+        <el-button type="danger" :icon="Delete" @click="cancelAccount">
+          注销账号
+        </el-button>
+      </el-tab-pane>
+    </el-tabs>
+  </div>
+</template>
 
 <style lang="scss" scoped>
 @import "@/assets/css/var.scss";

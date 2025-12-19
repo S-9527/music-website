@@ -1,3 +1,64 @@
+<script lang="ts">
+import { computed, defineComponent, ref, watch } from 'vue'
+import { useStore } from 'vuex'
+import { HttpManager } from '@/api'
+import Comment from '@/components/Comment.vue'
+import { parseLyric } from '@/utils'
+
+export default defineComponent({
+  components: {
+    Comment,
+  },
+  setup() {
+    const store = useStore()
+
+    const lrcTop = ref('80px') // 歌词滑动
+    const lyricArr = ref([]) // 当前歌曲的歌词
+    const songId = computed(() => store.getters.songId) // 歌曲ID
+    const lyric = computed(() => store.getters.lyric) // 歌词
+    const currentPlayList = computed(() => store.getters.currentPlayList) // 存放的音乐
+    const currentPlayIndex = computed(() => store.getters.currentPlayIndex) // 当前歌曲在歌曲列表的位置
+    const curTime = computed(() => store.getters.curTime)
+    const songTitle = computed(() => store.getters.songTitle) // 歌名
+    const singerName = computed(() => store.getters.singerName) // 歌手名
+    const songPic = computed(() => store.getters.songPic) // 歌曲图片
+    watch(songId, () => {
+      lyricArr.value = parseLyric(currentPlayList.value[currentPlayIndex.value].lyric)
+    })
+    // 处理歌词位置及颜色
+    watch(curTime, () => {
+      if (lyricArr.value.length !== 0) {
+        for (let i = 0; i < lyricArr.value.length; i++) {
+          if (curTime.value >= lyricArr.value[i][0]) {
+            for (let j = 0; j < lyricArr.value.length; j++) {
+              (document.querySelectorAll('.has-lyric li') as NodeListOf<HTMLElement>)[j].style.color = '#000';
+              (document.querySelectorAll('.has-lyric li') as NodeListOf<HTMLElement>)[j].style.fontSize = '14px'
+            }
+            if (i >= 0) {
+              lrcTop.value = `${-i * 30 + 50}px`;
+              (document.querySelectorAll('.has-lyric li') as NodeListOf<HTMLElement>)[i].style.color = '#95d2f6';
+              (document.querySelectorAll('.has-lyric li') as NodeListOf<HTMLElement>)[i].style.fontSize = '18px'
+            }
+          }
+        }
+      }
+    })
+
+    lyricArr.value = lyric.value ? parseLyric(lyric.value) : []
+
+    return {
+      songPic,
+      singerName,
+      songTitle,
+      lrcTop,
+      lyricArr,
+      songId,
+      attachImageUrl: HttpManager.attachImageUrl,
+    }
+  },
+})
+</script>
+
 <template>
   <div class="song-container">
     <el-image class="song-pic" fit="contain" :src="attachImageUrl(songPic)" />
@@ -10,83 +71,22 @@
     <div class="lyric-container">
       <div class="song-lyric">
         <transition-group name="lyric-fade">
-          <!--有歌词-->
-          <ul :style="{ top: lrcTop }" class="has-lyric" v-if="lyricArr.length" key="has-lyric">
+          <!-- 有歌词 -->
+          <ul v-if="lyricArr.length" key="has-lyric" :style="{ top: lrcTop }" class="has-lyric">
             <li v-for="(item, index) in lyricArr" :key="index">
               {{ item[1] }}
             </li>
           </ul>
-          <!--没歌词-->
-          <div v-else class="no-lyric" key="no-lyric">
+          <!-- 没歌词 -->
+          <div v-else key="no-lyric" class="no-lyric">
             <span>暂无歌词</span>
           </div>
         </transition-group>
       </div>
-      <comment :playId="songId" :type="0"></comment>
+      <Comment :play-id="songId" :type="0" />
     </div>
   </div>
 </template>
-
-<script lang="ts">
-import { computed, defineComponent, ref, watch } from "vue";
-import { useStore } from "vuex";
-import Comment from "@/components/Comment.vue";
-import { parseLyric } from "@/utils";
-import { HttpManager } from "@/api";
-
-export default defineComponent({
-  components: {
-    Comment,
-  },
-  setup() {
-    const store = useStore();
-
-    const lrcTop = ref("80px"); // 歌词滑动
-    const lyricArr = ref([]); // 当前歌曲的歌词
-    const songId = computed(() => store.getters.songId); // 歌曲ID
-    const lyric = computed(() => store.getters.lyric); // 歌词
-    const currentPlayList = computed(() => store.getters.currentPlayList); // 存放的音乐
-    const currentPlayIndex = computed(() => store.getters.currentPlayIndex); // 当前歌曲在歌曲列表的位置
-    const curTime = computed(() => store.getters.curTime);
-    const songTitle = computed(() => store.getters.songTitle); // 歌名
-    const singerName = computed(() => store.getters.singerName); // 歌手名
-    const songPic = computed(() => store.getters.songPic); // 歌曲图片
-    watch(songId, () => {
-      lyricArr.value = parseLyric(currentPlayList.value[currentPlayIndex.value].lyric);
-    });
-    // 处理歌词位置及颜色
-    watch(curTime, () => {
-      if (lyricArr.value.length !== 0) {
-        for (let i = 0; i < lyricArr.value.length; i++) {
-          if (curTime.value >= lyricArr.value[i][0]) {
-            for (let j = 0; j < lyricArr.value.length; j++) {
-              (document.querySelectorAll(".has-lyric li") as NodeListOf<HTMLElement>)[j].style.color = "#000";
-              (document.querySelectorAll(".has-lyric li") as NodeListOf<HTMLElement>)[j].style.fontSize = "14px";
-            }
-            if (i >= 0) {
-              lrcTop.value = -i * 30 + 50 + "px";
-              (document.querySelectorAll(".has-lyric li") as NodeListOf<HTMLElement>)[i].style.color = "#95d2f6";
-              (document.querySelectorAll(".has-lyric li") as NodeListOf<HTMLElement>)[i].style.fontSize = "18px";
-            }
-          }
-        }
-      }
-    });
-
-    lyricArr.value = lyric.value ? parseLyric(lyric.value) : [];
-
-    return {
-      songPic,
-      singerName,
-      songTitle,
-      lrcTop,
-      lyricArr,
-      songId,
-      attachImageUrl: HttpManager.attachImageUrl,
-    };
-  },
-});
-</script>
 
 <style lang="scss" scoped>
 @import "@/assets/css/var.scss";
