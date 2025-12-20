@@ -2,12 +2,12 @@ import { bannerAPI } from './modules/banner.ts'
 import { collectionAPI } from './modules/collection.ts'
 import { commentAPI } from './modules/comment.ts'
 import { rankAPI } from './modules/rank.ts'
-import { getBaseURL } from './request'
 import { singerAPI } from './modules/singer.ts'
 import { songAPI } from './modules/song.ts'
 import { songListAPI } from './modules/songList.ts'
 import { supportAPI } from './modules/support.ts'
 import { userAPI } from './modules/user.ts'
+import { getBaseURL } from './request'
 
 const HttpManager = {
   // 获取图片信息
