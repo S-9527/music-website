@@ -1,14 +1,14 @@
-import { RouterName } from './router-name'
+import { RouterName } from '@/router/const'
 
-export const enum NavName {
-  Home = '首页',
-  SongSheet = '歌单',
-  Singer = '歌手',
-  Personal = '个人主页',
-  Setting = '设置',
-  SignIn = '登录',
-  SignUp = '注册',
-  SignOut = '退出',
+export const NavName = {
+  Home: '首页',
+  SongSheet: '歌单',
+  Singer: '歌手',
+  Personal: '个人主页',
+  Setting: '设置',
+  SignIn: '登录',
+  SignUp: '注册',
+  SignOut: '退出',
 }
 
 // 左侧导航栏

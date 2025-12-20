@@ -3,14 +3,13 @@ import { Edit } from '@element-plus/icons-vue'
 import { computed, nextTick, ref, watch } from 'vue'
 import { HttpManager } from '@/api'
 import SongList from '@/components/SongList.vue'
-import { useApp } from '@/composables/useApp'
-import { RouterName } from '@/enums'
+import { useGoto } from '@/composables/goto'
 import { useUserStore } from '@/store'
 import Upload from '../setting/Upload.vue'
 
 const userStore = useUserStore()
 
-const { routerManager } = useApp()
+const { gotoSetting } = useGoto()
 
 // Define attachImageUrl for use in template
 const attachImageUrl = HttpManager.attachImageUrl
@@ -28,7 +27,7 @@ watch(userPic, () => {
 })
 
 function goPage() {
-  routerManager(RouterName.Setting, { path: RouterName.Setting })
+  gotoSetting()
 }
 
 // 获取收藏的歌曲

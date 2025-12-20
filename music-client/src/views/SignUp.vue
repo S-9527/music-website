@@ -4,10 +4,12 @@ import { ElMessage } from 'element-plus'
 import { reactive, ref } from 'vue'
 import { HttpManager } from '@/api'
 import YinLoginLogo from '@/components/layouts/YinLoginLogo.vue'
+import { useGoto } from '@/composables/goto'
 import { useApp } from '@/composables/useApp'
-import { AREA, NavName, RouterName, SignUpRules } from '@/enums'
+import { AREA, NavName, SignUpRules } from '@/enums'
 
-const { routerManager, changeIndex } = useApp()
+const { changeIndex } = useApp()
+const { gotoSignIn } = useGoto()
 
 const signUpForm = ref<FormInstance>()
 
@@ -23,7 +25,7 @@ const registerForm = reactive({
 })
 
 async function goBackRegister() {
-  routerManager(RouterName.SignIn, { path: RouterName.SignIn })
+  gotoSignIn()
 }
 
 async function handleSignUp() {
@@ -54,7 +56,7 @@ async function handleSignUp() {
 
     if (result.success) {
       changeIndex(NavName.SignIn)
-      routerManager(RouterName.SignIn, { path: RouterName.SignIn })
+      gotoSignIn()
     }
   }
   catch (error) {

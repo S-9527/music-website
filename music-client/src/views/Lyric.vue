@@ -1,10 +1,11 @@
 <script lang="ts" setup>
-import { computed, ref, watch, onMounted, onUnmounted, type ComputedRef } from 'vue'
+import type { ComputedRef } from 'vue'
+import type { Song } from '@/types'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { HttpManager } from '@/api'
 import Comment from '@/components/Comment.vue'
 import { useSongStore } from '@/store'
 import { parseLyric } from '@/utils'
-import type { Song } from '@/types'
 
 const songStore = useSongStore()
 
@@ -32,7 +33,8 @@ watch(songId, () => {
     if (currentSong && currentSong.lyric) {
       // If lyric is a string, parse it; otherwise use it directly
       lyricArr.value = typeof currentSong.lyric === 'string' ? parseLyric(currentSong.lyric) : currentSong.lyric
-    } else {
+    }
+    else {
       lyricArr.value = []
     }
   }
@@ -56,7 +58,8 @@ onUnmounted(() => {
 
 // Function to update lyric display based on current time
 function updateLyricDisplay() {
-  if (lyricArr.value.length === 0) return
+  if (lyricArr.value.length === 0)
+    return
 
   // Find the current lyric line based on time
   let currentIndex = -1
@@ -64,7 +67,8 @@ function updateLyricDisplay() {
     const lyricTime = lyricArr.value[i][0]
     if (curTime.value >= lyricTime) {
       currentIndex = i
-    } else {
+    }
+    else {
       break
     }
   }

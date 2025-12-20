@@ -1,14 +1,8 @@
-import type { LocationQueryRaw } from 'vue-router'
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useConfigureStore, useSongStore } from '@/store'
-
-interface routerOptions {
-  path?: string
-  query?: LocationQueryRaw
-}
 
 export function useApp() {
   const router = useRouter()
@@ -126,12 +120,6 @@ export function useApp() {
     configureStore.setActiveNavName(value)
   }
 
-  // 路由管理
-  function routerManager(routerName: string | number, options: routerOptions) {
-    // We'll need to import RouterName separately
-    router.push({ path: options.path, query: options.query })
-  }
-
   function goBack(step: number = -1) {
     router.go(step)
   }
@@ -143,7 +131,6 @@ export function useApp() {
     changeIndex,
     checkStatus,
     playMusic,
-    routerManager,
     goBack,
     downloadMusic,
   }

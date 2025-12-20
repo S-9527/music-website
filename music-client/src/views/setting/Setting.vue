@@ -3,15 +3,14 @@ import { Delete } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { computed } from 'vue'
 import { HttpManager } from '@/api'
-import { useApp } from '@/composables/useApp'
-import { RouterName } from '@/enums'
+import { useGoto } from '@/composables/goto'
 import { useConfigureStore, useUserStore } from '@/store'
 import Password from './Password.vue'
 import PersonalData from './PersonalData.vue'
 
 const userStore = useUserStore()
 const configureStore = useConfigureStore()
-const { routerManager } = useApp()
+const { gotoSignIn } = useGoto()
 
 const userId = computed(() => userStore.userId)
 
@@ -21,7 +20,7 @@ async function cancelAccount() {
     message: result.message,
     type: result.type,
   })
-  routerManager(RouterName.SignIn, { path: RouterName.SignIn })
+  gotoSignIn()
   configureStore.setToken(false)
 }
 </script>

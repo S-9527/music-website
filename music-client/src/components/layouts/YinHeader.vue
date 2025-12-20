@@ -3,13 +3,25 @@ import { Search } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { computed, reactive, ref } from 'vue'
 import { HttpManager } from '@/api'
+import { useGoto } from '@/composables/goto'
 import { useApp } from '@/composables/useApp'
-import { HEADERNAVLIST, Icon, MENULIST, MUSICNAME, NavName, RouterName, SIGNLIST } from '@/enums'
+import { HEADERNAVLIST, Icon, MENULIST, MUSICNAME, NavName, SIGNLIST } from '@/enums'
+import { RouterName } from '@/router/const'
 import { useConfigureStore, useUserStore } from '@/store'
 import YinHeaderNav from './YinHeaderNav.vue'
 import YinIcon from './YinIcon.vue'
 
-const { changeIndex, routerManager } = useApp()
+const { changeIndex } = useApp()
+const {
+  gotoHome,
+  gotoSongSheet,
+  gotoSinger,
+  gotoPersonal,
+  gotoSignIn,
+  gotoSignUp,
+  gotoSearch,
+  gotoSetting,
+} = useGoto()
 const userStore = useUserStore()
 const configureStore = useConfigureStore()
 
@@ -30,31 +42,57 @@ const token = computed(() => configureStore.token)
 const attachImageUrl = HttpManager.attachImageUrl
 
 function goPage(path?: string, name?: string) {
-  if (!path && !name) {
-    changeIndex(NavName.Home)
-    routerManager(RouterName.Home, { path: RouterName.Home })
-  }
-  else {
-    changeIndex(name || '')
-    routerManager(path || '', { path: path || '' })
+  changeIndex(name || '')
+  // Handle different routes based on the path
+  switch (path) {
+    case RouterName.Home:
+      gotoHome()
+      break
+    case RouterName.SongSheet:
+      gotoSongSheet()
+      break
+    case RouterName.Singer:
+      gotoSinger()
+      break
+    case RouterName.SignIn:
+      gotoSignIn()
+      break
+    case RouterName.SignUp:
+      gotoSignUp()
+      break
+    default:
+      gotoHome() // fallback to home
+      break
   }
 }
 
 function goMenuList(path: string) {
-  if (path === RouterName.SignOut) {
-    configureStore.setToken(false)
-    changeIndex(NavName.Home)
-    routerManager(RouterName.Home, { path: RouterName.Home })
-  }
-  else {
-    routerManager(path, { path })
+  // Handle different menu routes
+  switch (path) {
+    case RouterName.SignIn:
+      gotoSignIn()
+      break
+    case RouterName.SignUp:
+      gotoSignUp()
+      break
+    case RouterName.Personal:
+      gotoPersonal()
+      break
+    case RouterName.Setting:
+      gotoSetting()
+      break
+    default:
+      configureStore.setToken(false)
+      changeIndex(NavName.Home)
+      gotoHome()
+      break
   }
 }
 
 function goSearch() {
   if (keywords.value !== '') {
     configureStore.setSearchWord(keywords.value)
-    routerManager(RouterName.Search, { path: RouterName.Search, query: { keywords: keywords.value } })
+    gotoSearch({ keywords: keywords.value })
   }
   else {
     ElMessage({
@@ -72,18 +110,30 @@ function goSearch() {
       <YinIcon :icon="iconList.HEADPHONES" />
       <span>{{ musicName }}</span>
     </div>
-    <YinHeaderNav class="yin-header-nav" :style-list="headerNavList" :active-name="activeNavName" @click="goPage" />
+    <YinHeaderNav
+      class="yin-header-nav" :style-list="headerNavList" :active-name="activeNavName"
+      @click="goPage"
+    />
     <!-- 搜索框 -->
     <div class="header-search">
-      <el-input v-model="keywords" placeholder="搜索" :prefix-icon="Search" @keyup.enter="goSearch()" />
+      <el-input
+        v-model="keywords" placeholder="搜索" :prefix-icon="Search"
+        @keyup.enter="goSearch()"
+      />
     </div>
     <!-- 设置 -->
-    <YinHeaderNav v-if="!token" :style-list="signList" :active-name="activeNavName" @click="goPage" />
+    <YinHeaderNav
+      v-if="!token" :style-list="signList" :active-name="activeNavName"
+      @click="goPage"
+    />
     <el-dropdown v-if="token" class="user-wrap" trigger="click">
       <el-image class="user" fit="contain" :src="attachImageUrl(userPic)" />
       <template #dropdown>
         <el-dropdown-menu>
-          <el-dropdown-item v-for="(item, index) in menuList" :key="index" @click.stop="goMenuList(item.path)">
+          <el-dropdown-item
+            v-for="(item, index) in menuList" :key="index"
+            @click.stop="goMenuList(item.path)"
+          >
             {{ item.name }}
           </el-dropdown-item>
         </el-dropdown-menu>
@@ -105,6 +155,7 @@ function goSearch() {
 @media screen and (max-width: $sm) {
   .header-logo {
     margin: 0 1rem;
+
     span {
       display: none;
     }
@@ -135,10 +186,12 @@ function goSearch() {
   font-size: $font-size-logo;
   font-weight: bold;
   cursor: pointer;
+
   .icon {
     @include icon(1.9rem, $color-black);
     vertical-align: middle;
   }
+
   span {
     margin-left: 1rem;
   }
@@ -152,6 +205,7 @@ function goSearch() {
 .header-search {
   margin: 0 20px;
   width: 100%;
+
   &::v-deep input {
     text-indent: 5px;
     max-width: $header-search-max-width;

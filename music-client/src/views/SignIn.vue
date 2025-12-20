@@ -4,13 +4,15 @@ import { ElMessage } from 'element-plus'
 import { reactive, ref } from 'vue'
 import { HttpManager } from '@/api'
 import YinLoginLogo from '@/components/layouts/YinLoginLogo.vue'
+import { useGoto } from '@/composables/goto'
 import { useApp } from '@/composables/useApp'
-import { NavName, RouterName, SignInRules } from '@/enums'
+import { NavName, SignInRules } from '@/enums'
 import { useConfigureStore, useUserStore } from '@/store'
 
 const userStore = useUserStore()
 const configureStore = useConfigureStore()
-const { routerManager, changeIndex } = useApp()
+const { changeIndex } = useApp()
+const { gotoHome, gotoSignUp, gotoForgotPassword, gotoLoginByEmail } = useGoto()
 
 // 登录用户名密码
 const registerForm = reactive({
@@ -43,7 +45,7 @@ async function handleLoginIn() {
       userStore.setUserPic(result.data[0].avator)
       configureStore.setToken(true)
       changeIndex(NavName.Home)
-      routerManager(RouterName.Home, { path: RouterName.Home })
+      gotoHome()
     }
   }
   catch (error) {
@@ -52,14 +54,15 @@ async function handleLoginIn() {
 }
 
 function handleSignUp() {
-  routerManager(RouterName.SignUp, { path: RouterName.SignUp })
+  gotoSignUp()
 }
 
 function handleForgotPassword() {
-  routerManager(RouterName.ForgotPassword, { path: RouterName.ForgotPassword })
+  gotoForgotPassword()
 }
+
 function handleEmail() {
-  routerManager(RouterName.loginByemail, { path: RouterName.loginByemail })
+  gotoLoginByEmail()
 }
 </script>
 

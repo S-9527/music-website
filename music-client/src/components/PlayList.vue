@@ -2,7 +2,7 @@
 import { toRefs } from 'vue'
 import { HttpManager } from '@/api'
 import YinIcon from '@/components/layouts/YinIcon.vue'
-import { useApp } from '@/composables/useApp'
+import { useGoto } from '@/composables/goto'
 import { Icon } from '@/enums'
 import { useSongStore } from '@/store'
 
@@ -16,14 +16,20 @@ const props = withDefaults(defineProps<Props>(), {
   playList: () => [],
 })
 
-const { routerManager } = useApp()
+const { gotoSongSheetDetail, gotoSingerDetail } = useGoto()
 const songStore = useSongStore()
 
 const { path } = toRefs(props)
 
 function goAlbum(item: any) {
   songStore.setSongDetails(item)
-  routerManager(path.value, { path: `/${path.value}/${item.id}` })
+  // Determine which navigation function to use based on the path
+  if (path.value === 'song-sheet-detail') {
+    gotoSongSheetDetail(item.id)
+  }
+  else if (path.value === 'singer-detail') {
+    gotoSingerDetail(item.id)
+  }
 }
 
 const attachImageUrl = HttpManager.attachImageUrl
