@@ -18,8 +18,8 @@ const form = reactive({
   newPassword: '',
   confirmPassword: '',
 })
-const userId = computed(() => userStore.getUserId)
-const userName = computed(() => userStore.getUsername)
+const userId = computed(() => userStore.userId)
+const userName = computed(() => userStore.username)
 
 function validateCheck(rule: any, value: any, callback: any) {
   if (value === '') {

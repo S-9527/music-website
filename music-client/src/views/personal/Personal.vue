@@ -26,10 +26,6 @@ watch(userPic, () => {
   dialogTableVisible.value = false
 })
 
-function goPage() {
-  gotoSetting()
-}
-
 // 获取收藏的歌曲
 async function getCollection(userId: string) {
   const result = await HttpManager.getCollectionOfUser(userId)
@@ -81,7 +77,7 @@ nextTick(async () => {
           {{ introduction }}
         </div>
       </div>
-      <el-button class="edit-info" round :icon="Edit" @click="goPage()">
+      <el-button class="edit-info" round :icon="Edit" @click="gotoSetting()">
         修改个人信息
       </el-button>
     </div>

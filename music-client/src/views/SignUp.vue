@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { FormInstance } from 'element-plus'
+import type { SignUpParams } from '@/api/modules/user.ts'
 import { ElMessage } from 'element-plus'
 import { reactive, ref } from 'vue'
 import { HttpManager } from '@/api'
@@ -13,7 +14,7 @@ const { gotoSignIn } = useGoto()
 
 const signUpForm = ref<FormInstance>()
 
-const registerForm = reactive({
+const registerForm = reactive<SignUpParams>({
   username: '',
   password: '',
   sex: '',
@@ -40,15 +41,7 @@ async function handleSignUp() {
     return
 
   try {
-    const username = registerForm.username
-    const password = registerForm.password
-    const sex = registerForm.sex
-    const phoneNum = registerForm.phoneNum
-    const email = registerForm.email
-    const birth = registerForm.birth
-    const introduction = registerForm.introduction
-    const location = registerForm.location
-    const result = await HttpManager.signUp({ username, password, sex, phoneNum, email, birth, introduction, location })
+    const result = await HttpManager.signUp(registerForm)
     ElMessage({
       message: result.message,
       type: result.type,

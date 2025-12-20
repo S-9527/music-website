@@ -11,13 +11,13 @@ interface SignInByEmailParams {
   password: string
 }
 
-interface SignUpParams {
+export interface SignUpParams {
   username: string
   password: string
-  sex: number
+  sex: number | string
   phoneNum: string
   email: string
-  birth: string
+  birth: string | Date
   introduction: string
   location: string
 }
