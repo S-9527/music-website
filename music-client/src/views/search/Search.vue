@@ -1,22 +1,24 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, shallowRef } from 'vue'
 import YinNav from '@/components/layouts/YinNav.vue'
+import SearchSong from './SearchSong.vue'
+import SearchSongList from './SearchSongList.vue'
 
 const searchNavList = [
   {
     name: '歌曲',
-    value: 'SearchSong',
+    value: SearchSong,
   },
   {
     name: '歌单',
-    value: 'SearchSongList',
+    value: SearchSongList,
   },
 ]
 
 const activeName = ref('歌曲')
-const currentView = ref('SearchSong')
+const currentView = shallowRef(SearchSong)
 
-function handleChangeView(item: { name: string, value: string }) {
+function handleChangeView(item: { name: string, value: any }) {
   activeName.value = item.name
   currentView.value = item.value
 }
