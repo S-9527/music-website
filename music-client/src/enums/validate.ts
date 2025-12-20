@@ -1,5 +1,5 @@
 // 登录规则
-function validateName(rule, value, callback) {
+function validateName(_rule: any, value: any, callback: (arg0: Error | undefined) => void) {
   if (!value) {
     return callback(new Error('用户名不能为空'))
   }
@@ -8,7 +8,7 @@ function validateName(rule, value, callback) {
   }
 }
 
-export function validatePassword(rule, value, callback) {
+export function validatePassword(_rule: any, value: string, callback: (arg0: Error | undefined) => void) {
   if (value === '') {
     callback(new Error('密码不能为空'))
   }

@@ -1,82 +1,77 @@
-<script lang="ts">
-import { computed, defineComponent, getCurrentInstance, reactive } from 'vue'
-import { useStore } from 'vuex'
+<script lang="ts" setup>
+import type { FormInstance } from 'element-plus'
+import { ElMessage } from 'element-plus'
+import { computed, reactive, ref } from 'vue'
 import { HttpManager } from '@/api'
+import { useApp } from '@/composables/useApp'
 import { validatePassword } from '@/enums'
-import mixin from '@/mixins/mixin'
+import { useUserStore } from '@/store'
 
-export default defineComponent({
-  setup() {
-    const store = useStore()
-    const { proxy } = getCurrentInstance()
-    const { goBack } = mixin()
+const userStore = useUserStore()
+const { goBack } = useApp()
 
-    const form = reactive({
-      oldPassword: '',
-      newPassword: '',
-      confirmPassword: '',
-    })
-    const userId = computed(() => store.getters.userId)
-    const userName = computed(() => store.getters.username)
+// Template ref for form validation
+const passwordFormRef = ref<FormInstance>()
 
-    const validateCheck = (rule: any, value: any, callback: any) => {
-      if (value === '') {
-        callback(new Error('密码不能为空'))
-      }
-      else if (value !== form.newPassword) {
-        callback(new Error('请输入正确密码'))
-      }
-      else {
-        callback()
-      }
-    }
-    const rules = reactive({
-      oldPassword: [{ validator: validatePassword, trigger: 'blur', min: 3 }],
-      newPassword: [{ validator: validatePassword, trigger: 'blur', min: 3 }],
-      confirmPassword: [{ validator: validateCheck, trigger: 'blur', min: 3 }],
-    })
-
-    async function clearData() {
-      form.oldPassword = ''
-      form.newPassword = ''
-      form.confirmPassword = ''
-    }
-
-    async function confirm() {
-      let canRun = true;
-      (proxy.$refs.passwordForm as any).validate((valid) => {
-        if (!valid)
-          return (canRun = false)
-      })
-      if (!canRun)
-        return
-
-      const id = userId.value
-      const username = userName.value
-      const oldPassword = form.oldPassword
-      const password = form.newPassword
-
-      const result = (await HttpManager.updateUserPassword({ id, username, oldPassword, password })) as ResponseBody;
-      (proxy as any).$message({
-        message: result.message,
-        type: result.type,
-      })
-      if (result.success)
-        goBack()
-    }
-
-    return {
-      form,
-      clearData,
-      confirm,
-      rules,
-    }
-  },
+const form = reactive({
+  oldPassword: '',
+  newPassword: '',
+  confirmPassword: '',
 })
+const userId = computed(() => userStore.getUserId)
+const userName = computed(() => userStore.getUsername)
+
+function validateCheck(rule: any, value: any, callback: any) {
+  if (value === '') {
+    callback(new Error('密码不能为空'))
+  }
+  else if (value !== form.newPassword) {
+    callback(new Error('请输入正确密码'))
+  }
+  else {
+    callback()
+  }
+}
+const rules = reactive({
+  oldPassword: [{ validator: validatePassword, trigger: 'blur', min: 3 }],
+  newPassword: [{ validator: validatePassword, trigger: 'blur', min: 3 }],
+  confirmPassword: [{ validator: validateCheck, trigger: 'blur', min: 3 }],
+})
+
+async function clearData() {
+  form.oldPassword = ''
+  form.newPassword = ''
+  form.confirmPassword = ''
+}
+
+async function confirm() {
+  let canRun = true
+  if (passwordFormRef.value) {
+    await passwordFormRef.value.validate((valid) => {
+      if (!valid)
+        canRun = false
+    })
+  }
+  if (!canRun)
+    return
+
+  const id = userId.value
+  const username = userName.value
+  const oldPassword = form.oldPassword
+  const password = form.newPassword
+
+  const result = await HttpManager.updateUserPassword({ id, username, oldPassword, password })
+  ElMessage({
+    message: result.message,
+    type: result.type,
+  })
+  if (result.success)
+    goBack()
+}
 </script>
 
 <template>
-  <el-form ref="passwordForm" label-width="70px" :model="form" :rules="rules">
+  <el-form ref="passwordFormRef" label-width="70px" :model="form" :rules="rules">
     <el-form-item label="旧密码" prop="oldPassword">
       <el-input v-model="form.oldPassword" type="password" />
     </el-form-item>

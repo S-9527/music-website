@@ -1,16 +1,10 @@
-<script lang="ts">
-import { defineComponent, readonly } from 'vue'
+<script lang="ts" setup>
+import { readonly } from 'vue'
 
-export default defineComponent({
-  setup() {
-    const footerList = readonly([
-      '关于 | 帮助 | 条款 | 反馈',
-      'Copyright © 2019 Yin-Hongwei',
-    ])
-
-    return { footerList }
-  },
-})
+const footerList = readonly([
+  '关于 | 帮助 | 条款 | 反馈',
+  'Copyright © 2019 Yin-Hongwei',
+])
 </script>
 
 <template>

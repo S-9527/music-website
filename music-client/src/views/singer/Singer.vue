@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import type { ResponseBody } from '@/api'
 import { computed, ref } from 'vue'
 import { HttpManager } from '@/api'
 import YinNav from '@/components/layouts/YinNav.vue'
@@ -35,9 +36,7 @@ function handleChangeView(item) {
   if (item.name === '全部歌手') {
     getAllSinger()
   }
-  else {
-    getSingerSex(item.type)
-  }
+  getSingerSex(item.type)
 }
 
 // 通过性别对歌手分类

@@ -1,94 +1,75 @@
-<script lang="ts">
+<script lang="ts" setup>
 import { Search } from '@element-plus/icons-vue'
-import { computed, defineComponent, getCurrentInstance, reactive, ref } from 'vue'
-import { useStore } from 'vuex'
+import { ElMessage } from 'element-plus'
+import { computed, reactive, ref } from 'vue'
 import { HttpManager } from '@/api'
+import { useApp } from '@/composables/useApp'
 import { HEADERNAVLIST, Icon, MENULIST, MUSICNAME, NavName, RouterName, SIGNLIST } from '@/enums'
-import mixin from '@/mixins/mixin'
+import { useConfigureStore, useUserStore } from '@/store'
 import YinHeaderNav from './YinHeaderNav.vue'
 import YinIcon from './YinIcon.vue'
 
-export default defineComponent({
-  components: {
-    YinIcon,
-    YinHeaderNav,
-  },
-  setup() {
-    const { proxy } = getCurrentInstance()
-    const store = useStore()
-    const { changeIndex, routerManager } = mixin()
+const { changeIndex, routerManager } = useApp()
+const userStore = useUserStore()
+const configureStore = useConfigureStore()
 
-    const musicName = ref(MUSICNAME)
-    const headerNavList = ref(HEADERNAVLIST) // 左侧导航栏
-    const signList = ref(SIGNLIST) // 右侧导航栏
-    const menuList = ref(MENULIST) // 用户下拉菜单项
-    const iconList = reactive({
-      ERJI: Icon.ERJI,
-    })
-    const keywords = ref('')
-    const activeNavName = computed(() => store.getters.activeNavName)
-    const userPic = computed(() => store.getters.userPic)
-    const token = computed(() => store.getters.token)
-
-    function goPage(path, name) {
-      if (!path && !name) {
-        changeIndex(NavName.Home)
-        routerManager(RouterName.Home, { path: RouterName.Home })
-      }
-      else {
-        changeIndex(name)
-        routerManager(path, { path })
-      }
-    }
-
-    function goMenuList(path) {
-      if (path == RouterName.SignOut) {
-        proxy.$store.commit('setToken', false)
-        changeIndex(NavName.Home)
-        routerManager(RouterName.Home, { path: RouterName.Home })
-      }
-      else {
-        routerManager(path, { path })
-      }
-    }
-    function goSearch() {
-      if (keywords.value !== '') {
-        proxy.$store.commit('setSearchWord', keywords.value)
-        routerManager(RouterName.Search, { path: RouterName.Search, query: { keywords: keywords.value } })
-      }
-      else {
-        (proxy as any).$message({
-          message: '搜索内容不能为空',
-          type: 'error',
-        })
-      }
-    }
-
-    return {
-      musicName,
-      headerNavList,
-      signList,
-      menuList,
-      iconList,
-      keywords,
-      activeNavName,
-      userPic,
-      token,
-      Search,
-      goPage,
-      goMenuList,
-      goSearch,
-      attachImageUrl: HttpManager.attachImageUrl,
-    }
-  },
+const musicName = ref(MUSICNAME)
+const headerNavList = ref(HEADERNAVLIST) // 左侧导航栏
+const signList = ref(SIGNLIST) // 右侧导航栏
+const menuList = ref(MENULIST) // 用户下拉菜单项
+const iconList = reactive({
+  HEADPHONES: Icon.HEADPHONES,
 })
+const keywords = ref('')
+
+const activeNavName = computed(() => configureStore.activeNavName)
+const userPic = computed(() => userStore.userPic)
+const token = computed(() => configureStore.token)
+
+// Define attachImageUrl for use in template
+const attachImageUrl = HttpManager.attachImageUrl
+
+function goPage(path?: string, name?: string) {
+  if (!path && !name) {
+    changeIndex(NavName.Home)
+    routerManager(RouterName.Home, { path: RouterName.Home })
+  }
+  else {
+    changeIndex(name || '')
+    routerManager(path || '', { path: path || '' })
+  }
+}
+
+function goMenuList(path: string) {
+  if (path === RouterName.SignOut) {
+    configureStore.setToken(false)
+    changeIndex(NavName.Home)
+    routerManager(RouterName.Home, { path: RouterName.Home })
+  }
+  else {
+    routerManager(path, { path })
+  }
+}
+
+function goSearch() {
+  if (keywords.value !== '') {
+    configureStore.setSearchWord(keywords.value)
+    routerManager(RouterName.Search, { path: RouterName.Search, query: { keywords: keywords.value } })
+  }
+  else {
+    ElMessage({
+      message: '搜索内容不能为空',
+      type: 'error',
+    })
+  }
+}
 </script>
 
 <template>
   <div class="yin-header">
     <!-- 图标 -->
     <div class="header-logo" @click="goPage()">
-      <YinIcon :icon="iconList.ERJI" />
+      <YinIcon :icon="iconList.HEADPHONES" />
       <span>{{ musicName }}</span>
     </div>
     <YinHeaderNav class="yin-header-nav" :style-list="headerNavList" :active-name="activeNavName" @click="goPage" />

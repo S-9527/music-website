@@ -1,46 +1,38 @@
-<script lang="ts">
-import { computed, defineComponent, getCurrentInstance, onMounted, ref, watch } from 'vue'
-import { useStore } from 'vuex'
+<script lang="ts" setup>
+import { ElMessage } from 'element-plus'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { HttpManager } from '@/api'
 import PlayList from '@/components/PlayList.vue'
+import { useConfigureStore } from '@/store'
 
-export default defineComponent({
-  components: {
-    PlayList,
-  },
-  setup() {
-    const { proxy } = getCurrentInstance()
-    const store = useStore()
+const configureStore = useConfigureStore()
+const route = useRoute()
 
-    const playList = ref([])
-    const searchWord = computed(() => store.getters.searchWord)
-    watch(searchWord, (value) => {
-      getSearchList(value)
+const playList = ref([])
+const searchWord = computed(() => configureStore.getSearchWord)
+
+watch(searchWord, (value) => {
+  getSearchList(value)
+})
+
+async function getSearchList(value) {
+  if (!value)
+    return
+  const result = await HttpManager.getSongListOfLikeTitle(value)
+  if (!result.data.length) {
+    ElMessage({
+      message: '暂无该歌曲内容',
+      type: 'warning',
     })
+  }
+  else {
+    playList.value = result.data
+  }
+}
 
-    async function getSearchList(value) {
-      if (!value)
-        return
-      const result = (await HttpManager.getSongListOfLikeTitle(value)) as ResponseBody
-      if (!result.data.length) {
-        (proxy as any).$message({
-          message: '暂无该歌曲内容',
-          type: 'warning',
-        })
-      }
-      else {
-        playList.value = result.data
-      }
-    }
-
-    onMounted(() => {
-      getSearchList(proxy.$route.query.keywords)
-    })
-
-    return {
-      playList,
-    }
-  },
+onMounted(() => {
+  getSearchList(route.query.keywords as string || '')
 })
 </script>
 

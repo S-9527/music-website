@@ -1,86 +1,70 @@
-<script lang="ts">
+<script lang="ts" setup>
 import { Edit } from '@element-plus/icons-vue'
-import { computed, defineComponent, nextTick, reactive, ref, watch } from 'vue'
-import { useStore } from 'vuex'
+import { computed, nextTick, ref, watch } from 'vue'
 import { HttpManager } from '@/api'
 import SongList from '@/components/SongList.vue'
+import { useApp } from '@/composables/useApp'
 import { RouterName } from '@/enums'
-import mixin from '@/mixins/mixin'
+import { useUserStore } from '@/store'
 import Upload from '../setting/Upload.vue'
 
-export default defineComponent({
-  components: {
-    SongList,
-    Upload,
-  },
-  setup() {
-    const store = useStore()
+const userStore = useUserStore()
 
-    const { routerManager } = mixin()
+const { routerManager } = useApp()
 
-    const dialogTableVisible = ref(false)
-    const collectSongList = ref([]) // 收藏的歌曲
-    const personalInfo = reactive({
-      username: '',
-      userSex: '',
-      birth: '',
-      location: '',
-      introduction: '',
-    })
-    const userId = computed(() => store.getters.userId)
-    const userPic = computed(() => store.getters.userPic)
-    watch(userPic, () => {
-      dialogTableVisible.value = false
-    })
+// Define attachImageUrl for use in template
+const attachImageUrl = HttpManager.attachImageUrl
 
-    function goPage() {
-      routerManager(RouterName.Setting, { path: RouterName.Setting })
-    }
-    async function getUserInfo(id) {
-      const result = (await HttpManager.getUserOfId(id)) as ResponseBody
-      personalInfo.username = result.data[0].username
-      personalInfo.userSex = result.data[0].sex
-      personalInfo.birth = result.data[0].birth
-      personalInfo.introduction = result.data[0].introduction
-      personalInfo.location = result.data[0].location
-    }
-    // 获取收藏的歌曲
-    async function getCollection(userId) {
-      collectSongList.value = []
-      const result = (await HttpManager.getCollectionOfUser(userId)) as ResponseBody
-      const collectIDList = result.data || [] // 存放收藏的歌曲ID
-      // 通过歌曲ID获取歌曲信息
-      for (const item of collectIDList) {
-        if (!item.songId) {
-          console.error(`歌曲${item}异常`)
-          continue
-        }
+const dialogTableVisible = ref(false)
+const collectSongList = ref([]) // 收藏的歌曲
 
-        const result = (await HttpManager.getSongOfId(item.songId)) as ResponseBody
-        collectSongList.value.push(result.data[0])
-      }
+const userId = computed(() => userStore.userId)
+const userPic = computed(() => userStore.userPic)
+const username = computed(() => userStore.username)
+const introduction = computed(() => userStore.introduction)
+
+watch(userPic, () => {
+  dialogTableVisible.value = false
+})
+
+function goPage() {
+  routerManager(RouterName.Setting, { path: RouterName.Setting })
+}
+
+// 获取收藏的歌曲
+async function getCollection(userId: string) {
+  const result = await HttpManager.getCollectionOfUser(userId)
+  const collectIDList = result.data || [] // 存放收藏的歌曲ID
+
+  // 清空之前的收藏列表
+  collectSongList.value = []
+
+  // 通过歌曲ID获取歌曲信息
+  for (const item of collectIDList) {
+    if (!item.songId) {
+      console.error(`歌曲${item}异常`)
+      continue
     }
 
-    function changeData() {
-      getCollection(userId.value)
-    }
+    const result = await HttpManager.getSongOfId(item.songId)
+    collectSongList.value.push(result.data[0])
+  }
+}
 
-    nextTick(() => {
-      getUserInfo(userId.value)
-      getCollection(userId.value)
-    })
+function changeData() {
+  getCollection(userId.value)
+}
 
-    return {
-      Edit,
-      userPic,
-      dialogTableVisible,
-      collectSongList,
-      personalInfo,
-      attachImageUrl: HttpManager.attachImageUrl,
-      goPage,
-      changeData,
+nextTick(async () => {
+  // Load user info from the store if not already loaded
+  if (!userStore.userId) {
+    // If user info is not in store, fetch it and update the store
+    const result = await HttpManager.getUserOfId(userStore.userId)
+    if (result.data && result.data[0]) {
+      userStore.setUserInfo(result.data[0])
     }
-  },
+  }
+  await getCollection(userId.value)
 })
 </script>
 
@@ -92,10 +76,10 @@ export default defineComponent({
       </div>
       <div class="personal-msg">
         <div class="username">
-          {{ personalInfo.username }}
+          {{ username }}
         </div>
         <div class="introduction">
-          {{ personalInfo.introduction }}
+          {{ introduction }}
         </div>
       </div>
       <el-button class="edit-info" round :icon="Edit" @click="goPage()">
@@ -164,7 +148,7 @@ export default defineComponent({
 
 @media screen and (min-width: $sm) {
   .personal-body {
-    padding: 0px 100px;
+    padding: 0 100px;
   }
 }
 

@@ -1,77 +1,66 @@
-<script lang="ts">
-import { defineComponent, getCurrentInstance, reactive } from 'vue'
+<script lang="ts" setup>
+import type { FormInstance } from 'element-plus'
+import { ElMessage } from 'element-plus'
+import { reactive, ref } from 'vue'
 import { HttpManager } from '@/api'
 import YinLoginLogo from '@/components/layouts/YinLoginLogo.vue'
+import { useApp } from '@/composables/useApp'
 import { NavName, RouterName, SignInRules } from '@/enums'
-import mixin from '@/mixins/mixin'
+import { useConfigureStore, useUserStore } from '@/store'
 
-export default defineComponent({
-  components: {
-    YinLoginLogo,
-  },
-  setup() {
-    const { proxy } = getCurrentInstance()
-    const { routerManager, changeIndex } = mixin()
+const userStore = useUserStore()
+const configureStore = useConfigureStore()
+const { routerManager, changeIndex } = useApp()
 
-    // 登录用户名密码
-    const registerForm = reactive({
-      username: '',
-      password: '',
+// 登录用户名密码
+const registerForm = reactive({
+  username: '',
+  password: '',
+})
+
+const signInForm = ref<FormInstance>()
+
+async function handleLoginIn() {
+  if (signInForm.value) {
+    const valid = await signInForm.value.validate().catch(() => false)
+    if (!valid) {
+      return
+    }
+  }
+
+  try {
+    const username = registerForm.username
+    const password = registerForm.password
+    const result = (await HttpManager.signIn({ username, password }))
+    ElMessage({
+      message: result.message,
+      type: result.type,
     })
 
-    async function handleLoginIn() {
-      let canRun = true;
-      (proxy.$refs.signInForm as any).validate((valid) => {
-        if (!valid)
-          return (canRun = false)
-      })
-      if (!canRun)
-        return
-
-      try {
-        const username = registerForm.username
-        const password = registerForm.password
-        const result = (await HttpManager.signIn({ username, password })) as ResponseBody;
-        (proxy as any).$message({
-          message: result.message,
-          type: result.type,
-        })
-
-        if (result.success) {
-          proxy.$store.commit('setUserId', result.data[0].id)
-          proxy.$store.commit('setUsername', result.data[0].username)
-          proxy.$store.commit('setUserPic', result.data[0].avator)
-          proxy.$store.commit('setToken', true)
-          changeIndex(NavName.Home)
-          routerManager(RouterName.Home, { path: RouterName.Home })
-        }
-      }
-      catch (error) {
-        console.error(error)
-      }
+    if (result.success) {
+      userStore.setUserId(result.data[0].id)
+      userStore.setUsername(result.data[0].username)
+      userStore.setUserPic(result.data[0].avator)
+      configureStore.setToken(true)
+      changeIndex(NavName.Home)
+      routerManager(RouterName.Home, { path: RouterName.Home })
     }
+  }
+  catch (error) {
+    console.error(error)
+  }
+}
 
-    function handleSignUp() {
-      routerManager(RouterName.SignUp, { path: RouterName.SignUp })
-    }
+function handleSignUp() {
+  routerManager(RouterName.SignUp, { path: RouterName.SignUp })
+}
 
-    function handleForgotPassword() {
-      routerManager(RouterName.ForgotPassword, { path: RouterName.ForgotPassword })
-    }
-    function handleEmail() {
-      routerManager(RouterName.loginByemail, { path: RouterName.loginByemail })
-    }
-
-    return {
-      registerForm,
-      SignInRules,
-      handleLoginIn,
-      handleForgotPassword,
-      handleEmail,
-      handleSignUp,
-    }
-  },
-})
+function handleForgotPassword() {
+  routerManager(RouterName.ForgotPassword, { path: RouterName.ForgotPassword })
+}
+function handleEmail() {
+  routerManager(RouterName.loginByemail, { path: RouterName.loginByemail })
+}
 </script>
 
 <template>

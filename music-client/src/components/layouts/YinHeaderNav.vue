@@ -1,23 +1,23 @@
-<script lang="ts">
-import { defineComponent, getCurrentInstance } from 'vue'
+<script lang="ts" setup>
+interface Props {
+  styleList?: any[]
+  activeName?: string
+}
 
-export default defineComponent({
-  props: {
-    styleList: Array,
-    activeName: String,
-  },
-  emits: ['click'],
-  setup() {
-    const { proxy } = getCurrentInstance()
+interface Emits {
+  (e: 'click', path: string, name: string): void
+}
 
-    function handleChangeView(item) {
-      proxy.$emit('click', item.path, item.name)
-    }
-    return {
-      handleChangeView,
-    }
-  },
+withDefaults(defineProps<Props>(), {
+  styleList: () => [],
+  activeName: '',
 })
+
+const emit = defineEmits<Emits>()
+
+function handleChangeView(item: any) {
+  emit('click', item.path, item.name)
+}
 </script>
 
 <template>

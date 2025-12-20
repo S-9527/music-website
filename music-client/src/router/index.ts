@@ -1,5 +1,7 @@
 import type { RouteRecordRaw } from 'vue-router'
 import { createRouter, createWebHistory } from 'vue-router'
+import { HttpManager } from '@/api'
+import { useConfigureStore, useUserStore } from '@/store'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -108,6 +110,41 @@ const routes: Array<RouteRecordRaw> = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+})
+
+// Global navigation guard
+router.beforeEach(async (to, _, next) => {
+  const configureStore = useConfigureStore()
+  const userStore = useUserStore()
+
+  // Check if route requires authentication
+  if (to.meta.requireAuth) {
+    // If user is not logged in, redirect to home
+    if (!configureStore.token) {
+      next('/')
+      return
+    }
+  }
+
+  // If user is logged in but user info is not fully loaded, fetch it
+  if (configureStore.token && userStore.userId && (!userStore.username || !userStore.userPic)) {
+    // User ID is available but other info is missing, fetch complete user info
+    try {
+      const result = await HttpManager.getUserOfId(userStore.userId)
+      if (result.data && result.data[0]) {
+        userStore.setUserInfo(result.data[0])
+      }
+    }
+    catch (error) {
+      console.error('Failed to fetch user info:', error)
+      // If we can't get user info, clear the token and redirect
+      configureStore.setToken(false)
+      next('/')
+      return
+    }
+  }
+
+  next()
 })
 
 export default router

@@ -1,62 +1,96 @@
-<script lang="ts">
-import { computed, defineComponent, ref, watch } from 'vue'
-import { useStore } from 'vuex'
+<script lang="ts" setup>
+import { computed, ref, watch, onMounted, onUnmounted, type ComputedRef } from 'vue'
 import { HttpManager } from '@/api'
 import Comment from '@/components/Comment.vue'
+import { useSongStore } from '@/store'
 import { parseLyric } from '@/utils'
+import type { Song } from '@/types'
 
-export default defineComponent({
-  components: {
-    Comment,
-  },
-  setup() {
-    const store = useStore()
+const songStore = useSongStore()
 
-    const lrcTop = ref('80px') // 歌词滑动
-    const lyricArr = ref([]) // 当前歌曲的歌词
-    const songId = computed(() => store.getters.songId) // 歌曲ID
-    const lyric = computed(() => store.getters.lyric) // 歌词
-    const currentPlayList = computed(() => store.getters.currentPlayList) // 存放的音乐
-    const currentPlayIndex = computed(() => store.getters.currentPlayIndex) // 当前歌曲在歌曲列表的位置
-    const curTime = computed(() => store.getters.curTime)
-    const songTitle = computed(() => store.getters.songTitle) // 歌名
-    const singerName = computed(() => store.getters.singerName) // 歌手名
-    const songPic = computed(() => store.getters.songPic) // 歌曲图片
-    watch(songId, () => {
-      lyricArr.value = parseLyric(currentPlayList.value[currentPlayIndex.value].lyric)
-    })
-    // 处理歌词位置及颜色
-    watch(curTime, () => {
-      if (lyricArr.value.length !== 0) {
-        for (let i = 0; i < lyricArr.value.length; i++) {
-          if (curTime.value >= lyricArr.value[i][0]) {
-            for (let j = 0; j < lyricArr.value.length; j++) {
-              (document.querySelectorAll('.has-lyric li') as NodeListOf<HTMLElement>)[j].style.color = '#000';
-              (document.querySelectorAll('.has-lyric li') as NodeListOf<HTMLElement>)[j].style.fontSize = '14px'
-            }
-            if (i >= 0) {
-              lrcTop.value = `${-i * 30 + 50}px`;
-              (document.querySelectorAll('.has-lyric li') as NodeListOf<HTMLElement>)[i].style.color = '#95d2f6';
-              (document.querySelectorAll('.has-lyric li') as NodeListOf<HTMLElement>)[i].style.fontSize = '18px'
-            }
-          }
-        }
-      }
-    })
+// Define attachImageUrl for use in template
+const attachImageUrl = HttpManager.attachImageUrl
 
-    lyricArr.value = lyric.value ? parseLyric(lyric.value) : []
+// Reactive state
+const lrcTop = ref('80px') // 歌词滑动
+const lyricArr = ref<Array<[number, string]>>([]) // 当前歌曲的歌词 [time, text]
 
-    return {
-      songPic,
-      singerName,
-      songTitle,
-      lrcTop,
-      lyricArr,
-      songId,
-      attachImageUrl: HttpManager.attachImageUrl,
+// Store getters
+const songId = computed(() => songStore.songId) // 歌曲ID
+const lyric = computed(() => songStore.lyric) // 歌词 (this is already parsed)
+const currentPlayList = computed(() => songStore.currentPlayList) as ComputedRef<Song[]> // 存放的音乐
+const currentPlayIndex = computed(() => songStore.currentPlayIndex) // 当前歌曲在歌曲列表的位置
+const curTime = computed(() => songStore.curTime)
+const songTitle = computed(() => songStore.songTitle) // 歌名
+const singerName = computed(() => songStore.singerName) // 歌手名
+const songPic = computed(() => songStore.songPic) // 歌曲图片
+
+// Update lyrics when song changes
+watch(songId, () => {
+  if (currentPlayList.value && currentPlayIndex.value >= 0) {
+    const currentSong = currentPlayList.value[currentPlayIndex.value]
+    if (currentSong && currentSong.lyric) {
+      // If lyric is a string, parse it; otherwise use it directly
+      lyricArr.value = typeof currentSong.lyric === 'string' ? parseLyric(currentSong.lyric) : currentSong.lyric
+    } else {
+      lyricArr.value = []
     }
-  },
+  }
 })
+
+// Update lyric display when time changes
+watch(curTime, updateLyricDisplay)
+
+// Initialize lyrics
+onMounted(() => {
+  if (lyric.value) {
+    // lyric.value should be a string, so we parse it to get the array
+    lyricArr.value = typeof lyric.value === 'string' ? parseLyric(lyric.value) : lyric.value
+  }
+})
+
+// Clean up on component unmount
+onUnmounted(() => {
+  // Reset any DOM manipulations if needed
+})
+
+// Function to update lyric display based on current time
+function updateLyricDisplay() {
+  if (lyricArr.value.length === 0) return
+
+  // Find the current lyric line based on time
+  let currentIndex = -1
+  for (let i = 0; i < lyricArr.value.length; i++) {
+    const lyricTime = lyricArr.value[i][0]
+    if (curTime.value >= lyricTime) {
+      currentIndex = i
+    } else {
+      break
+    }
+  }
+
+  if (currentIndex >= 0) {
+    // Reset all lyric elements to default style
+    const lyricElements = document.querySelectorAll('.has-lyric li') as NodeListOf<HTMLElement>
+    for (let i = 0; i < lyricElements.length; i++) {
+      const element = lyricElements[i]
+      if (element) {
+        element.style.color = '#000'
+        element.style.fontSize = '14px'
+      }
+    }
+
+    // Highlight the current lyric line
+    if (lyricElements[currentIndex]) {
+      const currentElement = lyricElements[currentIndex]
+      currentElement.style.color = '#95d2f6'
+      currentElement.style.fontSize = '18px'
+    }
+
+    // Update the scroll position
+    lrcTop.value = `${-currentIndex * 30 + 50}px`
+  }
+}
 </script>
 
 <template>

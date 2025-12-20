@@ -1,76 +1,66 @@
-<script lang="ts">
-import { defineComponent, getCurrentInstance, reactive } from 'vue'
+<script lang="ts" setup>
+import type { FormInstance } from 'element-plus'
+import { ElMessage } from 'element-plus'
+import { reactive, ref } from 'vue'
 import { HttpManager } from '@/api'
 import YinLoginLogo from '@/components/layouts/YinLoginLogo.vue'
+import { useApp } from '@/composables/useApp'
 import { AREA, NavName, RouterName, SignUpRules } from '@/enums'
-import mixin from '@/mixins/mixin'
 
-export default defineComponent({
-  components: {
-    YinLoginLogo,
-  },
-  setup() {
-    const { proxy } = getCurrentInstance()
-    const { routerManager, changeIndex } = mixin()
+const { routerManager, changeIndex } = useApp()
 
-    const registerForm = reactive({
-      username: '',
-      password: '',
-      sex: '',
-      phoneNum: '',
-      email: '',
-      birth: new Date(),
-      introduction: '',
-      location: '',
+const signUpForm = ref<FormInstance>()
+
+const registerForm = reactive({
+  username: '',
+  password: '',
+  sex: '',
+  phoneNum: '',
+  email: '',
+  birth: new Date(),
+  introduction: '',
+  location: '',
+})
+
+async function goBackRegister() {
+  routerManager(RouterName.SignIn, { path: RouterName.SignIn })
+}
+
+async function handleSignUp() {
+  let canRun = true
+  if (signUpForm.value) {
+    signUpForm.value.validate((valid) => {
+      if (!valid)
+        return (canRun = false)
+    })
+  }
+  if (!canRun)
+    return
+
+  try {
+    const username = registerForm.username
+    const password = registerForm.password
+    const sex = registerForm.sex
+    const phoneNum = registerForm.phoneNum
+    const email = registerForm.email
+    const birth = registerForm.birth
+    const introduction = registerForm.introduction
+    const location = registerForm.location
+    const result = await HttpManager.signUp({ username, password, sex, phoneNum, email, birth, introduction, location })
+    ElMessage({
+      message: result.message,
+      type: result.type,
     })
 
-    async function goBackRegist() {
+    if (result.success) {
+      changeIndex(NavName.SignIn)
       routerManager(RouterName.SignIn, { path: RouterName.SignIn })
     }
-
-    async function handleSignUp() {
-      let canRun = true;
-      (proxy.$refs.signUpForm as any).validate((valid) => {
-        if (!valid)
-          return (canRun = false)
-      })
-      if (!canRun)
-        return
-
-      try {
-        const username = registerForm.username
-        const password = registerForm.password
-        const sex = registerForm.sex
-        const phoneNum = registerForm.phoneNum
-        const email = registerForm.email
-        const birth = registerForm.birth
-        const introduction = registerForm.introduction
-        const location = registerForm.location
-        const result = (await HttpManager.SignUp({ username, password, sex, phoneNum, email, birth, introduction, location })) as ResponseBody;
-        (proxy as any).$message({
-          message: result.message,
-          type: result.type,
-        })
-
-        if (result.success) {
-          changeIndex(NavName.SignIn)
-          routerManager(RouterName.SignIn, { path: RouterName.SignIn })
-        }
-      }
-      catch (error) {
-        console.error(error)
-      }
-    }
-
-    return {
-      SignUpRules,
-      AREA,
-      registerForm,
-      handleSignUp,
-      goBackRegist,
-    }
-  },
-})
+  }
+  catch (error) {
+    console.error(error)
+  }
+}
 </script>
 
 <template>
@@ -88,13 +78,13 @@ export default defineComponent({
       </el-form-item>
       <el-form-item prop="sex" label="性别">
         <el-radio-group v-model="registerForm.sex">
-          <el-radio :label="0">
+          <el-radio :value="0">
             女
           </el-radio>
-          <el-radio :label="1">
+          <el-radio :value="1">
             男
           </el-radio>
-          <el-radio :label="2">
+          <el-radio :value="2">
             保密
           </el-radio>
         </el-radio-group>
@@ -117,10 +107,10 @@ export default defineComponent({
         </el-select>
       </el-form-item>
       <el-form-item class="sign-btn">
-        <el-button @click="goBackRegist()">
+        <el-button @click="goBackRegister()">
           取消
         </el-button>
-        <el-button type="primary" @click="handleSignUp(formRef)">
+        <el-button type="primary" @click="handleSignUp()">
           确定
         </el-button>
       </el-form-item>

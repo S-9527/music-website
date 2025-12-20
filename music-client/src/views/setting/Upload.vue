@@ -1,57 +1,45 @@
-<script lang="ts">
+<script lang="ts" setup>
 import { UploadFilled } from '@element-plus/icons-vue'
-import { computed, defineComponent, getCurrentInstance, ref } from 'vue'
-import { useStore } from 'vuex'
+import { ElMessage } from 'element-plus'
+import { computed, ref } from 'vue'
 import { HttpManager } from '@/api'
+import { useUserStore } from '@/store'
 
-export default defineComponent({
-  components: {
-    UploadFilled,
-  },
-  setup() {
-    const { proxy } = getCurrentInstance()
-    const store = useStore()
+const userStore = useUserStore()
 
-    const uploadTypes = ref(['jpg', 'jpeg', 'png', 'gif'])
-    const userId = computed(() => store.getters.userId)
+const uploadTypes = ref(['jpg', 'jpeg', 'png', 'gif'])
+const userId = computed(() => userStore.userId)
 
-    function uploadUrl() {
-      return HttpManager.uploadUrl(userId.value)
-    }
+function uploadUrl() {
+  return HttpManager.uploadUrl(userId.value)
+}
 
-    function beforeAvatarUpload(file) {
-      const ltCode = 2
-      const isLt10M = file.size / 1024 / 1024
-      const isExistFileType = uploadTypes.value.includes(file.type.replace(/image\//, ''))
+function beforeAvatarUpload(file: File) {
+  const ltCode = 2
+  const isLt10M = file.size / 1024 / 1024
+  const isExistFileType = uploadTypes.value.includes(file.type.replace(/image\//, ''))
 
-      if (isLt10M > ltCode || isLt10M <= 0) {
-        (proxy as any).$message.error(`图片大小范围是 0~${ltCode}MB!`)
-      }
-      if (!isExistFileType) {
-        (proxy as any).$message.error(`图片只支持 ${uploadTypes.value.join('、')} 格式!`)
-      }
+  if (isLt10M > ltCode || isLt10M <= 0) {
+    ElMessage.error(`图片大小范围是 0~${ltCode}MB!`)
+    return false
+  }
+  if (!isExistFileType) {
+    ElMessage.error(`图片只支持 ${uploadTypes.value.join('、')} 格式!`)
+    return false
+  }
 
-      return isLt10M && isExistFileType
-    }
+  return isLt10M && isExistFileType
+}
 
-    function handleAvatarSuccess(response, file) {
-      (proxy as any).$message({
-        message: response.message,
-        type: response.type,
-      })
+function handleAvatarSuccess(response: any, _file: any) {
+  ElMessage({
+    message: response.message,
+    type: response.type,
+  })
 
-      if (response.success)
-        proxy.$store.commit('setUserPic', response.data)
-    }
-
-    return {
-      uploadTypes,
-      uploadUrl,
-      beforeAvatarUpload,
-      handleAvatarSuccess,
-    }
-  },
-})
+  if (response.success)
+    userStore.setUserPic(response.data)
+}
 </script>
 
 <template>

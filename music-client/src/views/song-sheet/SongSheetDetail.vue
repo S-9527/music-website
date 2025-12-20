@@ -1,97 +1,92 @@
-<script lang="ts">
-import { computed, defineComponent, getCurrentInstance, ref } from 'vue'
-import { useStore } from 'vuex'
+<script lang="ts" setup>
+import { ElMessage } from 'element-plus'
+import { computed, ref } from 'vue'
 import { HttpManager } from '@/api'
 import Comment from '@/components/Comment.vue'
 import SongList from '@/components/SongList.vue'
-import mixin from '@/mixins/mixin'
+import { useApp } from '@/composables/useApp'
+import { useSongStore, useUserStore } from '@/store'
 
-export default defineComponent({
-  components: {
-    SongList,
-    Comment,
-  },
-  setup() {
-    const { proxy } = getCurrentInstance()
-    const store = useStore()
-    const { checkStatus } = mixin()
+const songStore = useSongStore()
+const userStore = useUserStore()
+const { checkStatus } = useApp()
 
-    const currentSongList = ref([]) // 存放的音乐
-    const nowSongListId = ref('') // 歌单 ID
-    const nowScore = ref(0)
-    const nowRank = ref(0)
-    const disabledRank = ref(false)
-    const assistText = ref('评价')
-    // const evaluateList = ref(["很差", "较差", "还行", "推荐", "力推"]);
-    const songDetails = computed(() => store.getters.songDetails) // 单个歌单信息
-    const nowUserId = computed(() => store.getters.userId)
+// Define attachImageUrl for use in template
+const attachImageUrl = HttpManager.attachImageUrl
 
-    nowSongListId.value = songDetails.value.id // 给歌单ID赋值
+const currentSongList = ref([]) // 存放的音乐
+const nowSongListId = ref('') // 歌单 ID
+const nowScore = ref(0)
+const nowRank = ref(0)
+const disabledRank = ref(false)
+const assistText = ref('评价')
 
-    // 收集歌单里面的歌曲
-    async function getSongId(id) {
-      const result = (await HttpManager.getListSongOfSongId(id)) as ResponseBody
-      // 获取歌单里的歌曲信息
-      for (const item of result.data) {
-        // 获取单里的歌曲
-        const resultSong = (await HttpManager.getSongOfId(item.songId)) as ResponseBody
-        currentSongList.value.push(resultSong.data[0])
-      }
-    }
-    // 获取评分
-    async function getRank(id) {
-      const result = (await HttpManager.getRankOfSongListId(id)) as ResponseBody
-      nowRank.value = result.data / 2
-    }
-    async function getUserRank(userId, songListId) {
-      const result = (await HttpManager.getUserRank(userId, songListId)) as ResponseBody
-      nowScore.value = result.data / 2
+const songDetails = computed(() => songStore.songDetails) // 单个歌单信息
+const nowUserId = computed(() => userStore.userId)
+
+nowSongListId.value = songDetails.value?.id || '' // 给歌单ID赋值
+
+// For template access - make sure these are available with the exact names used in template
+const score = nowScore
+const rank = nowRank
+const songListId = nowSongListId
+
+// 收集歌单里面的歌曲
+async function getSongId(id) {
+  const result = await HttpManager.getListSongOfSongId(id)
+  // 获取歌单里的歌曲信息
+  currentSongList.value = [] // 清空之前的列表
+  for (const item of result.data) {
+    // 获取单里的歌曲
+    const resultSong = await HttpManager.getSongOfId(item.songId)
+    currentSongList.value.push(resultSong.data[0])
+  }
+}
+// 获取评分
+async function getRank(id) {
+  const result = await HttpManager.getRankOfSongListId(id)
+  nowRank.value = result.data / 2
+}
+async function getUserRank(userId, songListIdParam) {
+  const result = await HttpManager.getUserRank(userId, songListIdParam)
+  nowScore.value = result.data / 2
+  disabledRank.value = true
+  assistText.value = '已评价'
+}
+// 提交评分
+async function pushValue() {
+  if (disabledRank.value || !checkStatus())
+    return
+
+  const songListIdParam = nowSongListId.value
+  const consumerId = nowUserId.value
+  const scoreParam = nowScore.value * 2
+  try {
+    const result = await HttpManager.setRank({ songListId: songListIdParam, consumerId, score: scoreParam })
+    ElMessage({
+      message: result.message,
+      type: result.type,
+    })
+
+    if (result.success) {
+      getRank(nowSongListId.value)
       disabledRank.value = true
       assistText.value = '已评价'
     }
-    // 提交评分
-    async function pushValue() {
-      if (disabledRank.value || !checkStatus())
-        return
+  }
+  catch (error) {
+    console.error(error)
+  }
+}
 
-      const songListId = nowSongListId.value
-      const consumerId = nowUserId.value
-      const score = nowScore.value * 2
-      try {
-        const result = (await HttpManager.setRank({ songListId, consumerId, score })) as ResponseBody;
-        (proxy as any).$message({
-          message: result.message,
-          type: result.type,
-        })
-
-        if (result.success) {
-          getRank(nowSongListId.value)
-          disabledRank.value = true
-          assistText.value = '已评价'
-        }
-      }
-      catch (error) {
-        console.error(error)
-      }
-    }
-
+// Execute async operations after component setup
+setTimeout(() => {
+  if (nowUserId.value && nowSongListId.value) {
     getUserRank(nowUserId.value, nowSongListId.value)
     getRank(nowSongListId.value) // 获取评分
     getSongId(nowSongListId.value) // 获取歌单里面的歌曲ID
-
-    return {
-      songDetails,
-      rank: nowRank,
-      score: nowScore,
-      disabledRank,
-      assistText,
-      currentSongList,
-      songListId: nowSongListId,
-      attachImageUrl: HttpManager.attachImageUrl,
-      pushValue,
-    }
-  },
-})
+  }
+}, 0)
 </script>
 
 <template>

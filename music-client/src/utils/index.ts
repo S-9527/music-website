@@ -1,6 +1,6 @@
 // 解析日期
 export function getBirth(value) {
-  if (value == null || value == '')
+  if (value == null || value === '')
     return ''
   const date = new Date(value)
   const year = date.getFullYear()
@@ -13,7 +13,7 @@ export function getBirth(value) {
  * 表格时间格式化
  */
 export function formatDate(cellValue) {
-  if (cellValue == null || cellValue == '')
+  if (cellValue == null || cellValue === '')
     return ''
   const date = new Date(cellValue)
   const year = date.getFullYear()
@@ -26,7 +26,7 @@ export function formatDate(cellValue) {
 }
 
 // 解析歌词
-export function parseLyric(text) {
+export function parseLyric(text: string): Array<[number, string]> {
   let lines = text.split('\n')
   const pattern = /\[\d{2}:\d{2}.(\d{3}|\d{2})\]/g
   const result = []

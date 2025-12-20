@@ -1,61 +1,51 @@
-<script lang="ts">
-import { computed, defineComponent, onMounted, ref } from 'vue'
-import { useStore } from 'vuex'
+<script lang="ts" setup>
+import { computed, onMounted, ref } from 'vue'
 import { HttpManager } from '@/api'
 import SongList from '@/components/SongList.vue'
-import mixin from '@/mixins/mixin'
+import { useApp } from '@/composables/useApp'
+import { useSongStore } from '@/store'
 import { getBirth } from '@/utils'
 
-export default defineComponent({
-  components: {
-    SongList,
-  },
-  setup() {
-    const store = useStore()
-    const { getUserSex } = mixin()
+const songStore = useSongStore()
+const { getUserSex } = useApp()
 
-    const currentSongList = ref([])
-    const songDetails = computed(() => store.getters.songDetails) as any
+const currentSongList = ref([])
+const songDetails = computed(() => songStore.songDetails)
 
-    onMounted(async () => {
-      try {
-        const result = (await HttpManager.getSongOfSingerId(songDetails.value.id)) as ResponseBody
-        currentSongList.value = result.data
-      }
-      catch (error) {
-        console.error(error)
-      }
-    })
+// Define attachImageUrl for use in template
+const attachImageUrl = HttpManager.attachImageUrl
 
-    return {
-      songDetails,
-      currentSongList,
-      attachImageUrl: HttpManager.attachImageUrl,
-      getBirth,
-      getUserSex,
+onMounted(async () => {
+  try {
+    if (songDetails.value?.id) {
+      const result = await HttpManager.getSongOfSingerId(songDetails.value.id)
+      currentSongList.value = result.data
     }
-  },
+  }
+  catch (error) {
+    console.error(error)
+  }
 })
 </script>
 
 <template>
   <el-container>
     <el-aside class="album-slide">
-      <el-image class="singer-img" fit="contain" :src="attachImageUrl(songDetails.pic)" />
+      <el-image class="singer-img" fit="contain" :src="attachImageUrl(songDetails?.pic)" />
       <div class="album-info">
         <h2>基本资料</h2>
         <ul>
-          <li v-if="songDetails.sex !== 2">
-            性别：{{ getUserSex(songDetails.sex) }}
+          <li v-if="songDetails?.sex !== 2">
+            性别：{{ getUserSex(songDetails?.sex) }}
           </li>
-          <li>生日：{{ getBirth(songDetails.birth) }}</li>
-          <li>故乡：{{ songDetails.location }}</li>
+          <li>生日：{{ getBirth(songDetails?.birth) }}</li>
+          <li>故乡：{{ songDetails?.location }}</li>
         </ul>
       </div>
     </el-aside>
     <el-main class="album-main">
-      <h1>{{ songDetails.name }}</h1>
-      <p>{{ songDetails.introduction }}</p>
+      <h1>{{ songDetails?.name }}</h1>
+      <p>{{ songDetails?.introduction }}</p>
       <SongList :song-list="currentSongList" />
     </el-main>
   </el-container>
@@ -90,7 +80,7 @@ export default defineComponent({
 .album-main {
   p {
     color: rgba(0, 0, 0, 0.5);
-    margin: 10px 0 20px 0px;
+    margin: 10px 0 20px 0;
   }
 }
 

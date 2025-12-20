@@ -1,42 +1,44 @@
 <script lang="ts" setup>
+import type { Singer, SongList, SwiperItem } from '@/types'
 import { onMounted, ref } from 'vue'
-
 import { HttpManager } from '@/api'
 import PlayList from '@/components/PlayList.vue'
+import { useApp } from '@/composables/useApp'
 import { NavName } from '@/enums'
-import mixin from '@/mixins/mixin'
 
-const songList = ref([]) // 歌单列表
-const singerList = ref([]) // 歌手列表
-const swiperList = ref([])// 轮播图 每次都在进行查询
-const { changeIndex } = mixin()
+const { changeIndex } = useApp()
+
+const songList = ref<SongList[]>([]) // 歌单列表
+const singerList = ref<Singer[]>([]) // 歌手列表
+const swiperList = ref<SwiperItem[]>([])// 轮播图 每次都在进行查询
+
 try {
   HttpManager.getBannerList().then((res) => {
-    swiperList.value = (res as ResponseBody).data.sort()
+    swiperList.value = res.data.sort()
   })
 
   HttpManager.getSongList().then((res) => {
-    songList.value = (res as ResponseBody).data.sort().slice(0, 10)
+    songList.value = res.data.sort().slice(0, 10)
   })
 
   HttpManager.getAllSinger().then((res) => {
-    singerList.value = (res as ResponseBody).data.sort().slice(0, 10)
-  })
-
-  onMounted(() => {
-    changeIndex(NavName.Home)
+    singerList.value = res.data.sort().slice(0, 10)
   })
 }
 catch (error) {
   console.error(error)
 }
+
+onMounted(() => {
+  changeIndex(NavName.Home)
+})
 </script>
 
 <template>
   <!-- 轮播图 -->
   <el-carousel v-if="swiperList.length" class="swiper-container" type="card" height="20vw" :interval="4000">
     <el-carousel-item v-for="(item, index) in swiperList" :key="index">
-      <img :src="HttpManager.attachImageUrl(item.pic)">
+      <img :src="HttpManager.attachImageUrl(item.pic)" alt="">
     </el-carousel-item>
   </el-carousel>
   <!-- 热门歌单 -->

@@ -1,28 +1,28 @@
-<script lang="ts">
-import { defineComponent, getCurrentInstance } from 'vue'
+<script lang="ts" setup>
+interface Props {
+  styleList?: any[]
+  activeName?: string
+}
 
-export default defineComponent({
-  props: {
-    styleList: Array,
-    activeName: String,
-  },
-  emits: ['click'],
-  setup() {
-    const { proxy } = getCurrentInstance()
+interface Emits {
+  (e: 'click', val: any): void
+}
 
-    function handleChangeView(val) {
-      proxy.$emit('click', val)
-    }
-    return {
-      handleChangeView,
-    }
-  },
+withDefaults(defineProps<Props>(), {
+  styleList: () => [],
+  activeName: '',
 })
+
+const emit = defineEmits<Emits>()
+
+function handleChangeView(val: any) {
+  emit('click', val)
+}
 </script>
 
 <template>
   <ul class="yin-nav">
-    <li v-for="(item, index) in styleList" :key="index" :class="{ active: item.name == activeName }" @click="handleChangeView(item)">
+    <li v-for="(item, index) in styleList" :key="index" :class="{ active: item.name === activeName }" @click="handleChangeView(item)">
       {{ item.name }}
     </li>
   </ul>

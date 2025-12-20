@@ -1,12 +1,5 @@
-import { createStore } from 'vuex'
-import configure from './configure'
-import song from './song'
-import user from './user'
+import { useConfigureStore } from './configure'
+import { useSongStore } from './song'
+import { useUserStore } from './user'
 
-export default createStore({
-  modules: {
-    configure,
-    user,
-    song,
-  },
-})
+export { useConfigureStore, useSongStore, useUserStore }

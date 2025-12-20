@@ -1,11 +1,21 @@
+import type { AxiosResponse } from 'axios'
 import axios from 'axios'
 import router from '@/router'
 
 axios.defaults.timeout = 5000 // 超时时间设置
 axios.defaults.withCredentials = true // true允许跨域
 axios.defaults.baseURL = 'http://localhost:8888'
-// Content-Type 响应头
-axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded;charset=UTF-8'
+// Content-Type 响应头 - Using JSON format
+axios.defaults.headers.post['Content-Type'] = 'application/json;charset=UTF-8'
+
+// 定义响应数据的类型
+export interface ResponseBody<T = any> {
+  code?: number
+  data: T
+  message: string
+  success: boolean
+  [key: string]: any
+}
 
 // 响应拦截器
 axios.interceptors.response.use(
@@ -15,33 +25,21 @@ axios.interceptors.response.use(
     if (response.status === 200) {
       return Promise.resolve(response)
     }
-    else {
-      return Promise.reject(response)
-    }
+    return Promise.reject(response)
   },
   // 服务器状态码不是2开头的的情况
   (error) => {
-    if (error.response.status) {
+    if (error.response?.status) {
       switch (error.response.status) {
         // 401: 未登录
         case 401:
-          router.replace({
-            path: '/',
-            query: {
-              // redirect: router.currentRoute.fullPath
-            },
-          })
+          router.replace({ path: '/' })
           break
         case 403:
           // console.log('管理员权限已修改请重新登录')
           // 跳转登录页面，并将要浏览的页面fullPath传过去，登录成功后跳转需要访问的页面
           setTimeout(() => {
-            router.replace({
-              path: '/',
-              query: {
-                // redirect: router.currentRoute.fullPath
-              },
-            })
+            router.replace({ path: '/' })
           }, 1000)
           break
 
@@ -52,6 +50,7 @@ axios.interceptors.response.use(
       }
       return Promise.reject(error.response)
     }
+    return Promise.reject(error)
   },
 )
 
@@ -61,14 +60,14 @@ export function getBaseURL() {
 
 /**
  * 封装get方法
- * @param url
- * @param data
- * @returns {Promise}
+ * @param url 请求地址
+ * @param params 请求参数
+ * @returns {Promise} 返回请求结果的Promise
  */
-export function get(url, params?: object) {
+export function get<T = any>(url: string, params?: object): Promise<ResponseBody<T>> {
   return new Promise((resolve, reject) => {
-    axios.get(url, params).then(
-      response => resolve(response.data),
+    axios.get(url, { params }).then(
+      (response: AxiosResponse<ResponseBody<T>>) => resolve(response.data),
       error => reject(error),
     )
   })
@@ -76,14 +75,14 @@ export function get(url, params?: object) {
 
 /**
  * 封装post请求
- * @param url
- * @param data
- * @returns {Promise}
+ * @param url 请求地址
+ * @param data 请求数据
+ * @returns {Promise} 返回请求结果的Promise
  */
-export function post(url, data = {}) {
+export function post<T = any>(url: string, data: object = {}): Promise<ResponseBody<T>> {
   return new Promise((resolve, reject) => {
     axios.post(url, data).then(
-      response => resolve(response.data),
+      (response: AxiosResponse<ResponseBody<T>>) => resolve(response.data),
       error => reject(error),
     )
   })
@@ -91,14 +90,14 @@ export function post(url, data = {}) {
 
 /**
  * 封装delete请求
- * @param url
- * @param data
- * @returns {Promise}
+ * @param url 请求地址
+ * @param data 请求数据
+ * @returns {Promise} 返回请求结果的Promise
  */
-export function deletes(url, data = {}) {
+export function deletes<T = any>(url: string, data: object = {}): Promise<ResponseBody<T>> {
   return new Promise((resolve, reject) => {
-    axios.delete(url, data).then(
-      response => resolve(response.data),
+    axios.delete(url, { data }).then(
+      (response: AxiosResponse<ResponseBody<T>>) => resolve(response.data),
       error => reject(error),
     )
   })
@@ -106,14 +105,14 @@ export function deletes(url, data = {}) {
 
 /**
  * 封装put请求
- * @param url
- * @param data
- * @returns {Promise}
+ * @param url 请求地址
+ * @param data 请求数据
+ * @returns {Promise} 返回请求结果的Promise
  */
-export function put(url, data = {}) {
+export function put<T = any>(url: string, data: object = {}): Promise<ResponseBody<T>> {
   return new Promise((resolve, reject) => {
     axios.put(url, data).then(
-      response => resolve(response.data),
+      (response: AxiosResponse<ResponseBody<T>>) => resolve(response.data),
       error => reject(error),
     )
   })

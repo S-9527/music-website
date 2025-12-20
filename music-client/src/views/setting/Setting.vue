@@ -1,41 +1,29 @@
-<script lang="ts">
+<script lang="ts" setup>
 import { Delete } from '@element-plus/icons-vue'
-import { computed, defineComponent, getCurrentInstance } from 'vue'
-import { useStore } from 'vuex'
+import { ElMessage } from 'element-plus'
+import { computed } from 'vue'
 import { HttpManager } from '@/api'
+import { useApp } from '@/composables/useApp'
 import { RouterName } from '@/enums'
-import mixin from '@/mixins/mixin'
+import { useConfigureStore, useUserStore } from '@/store'
 import Password from './Password.vue'
 import PersonalData from './PersonalData.vue'
 
-export default defineComponent({
-  components: {
-    PersonalData,
-    Password,
-  },
-  setup() {
-    const { proxy } = getCurrentInstance()
-    const store = useStore()
-    const { routerManager } = mixin()
+const userStore = useUserStore()
+const configureStore = useConfigureStore()
+const { routerManager } = useApp()
 
-    const userId = computed(() => store.getters.userId)
+const userId = computed(() => userStore.userId)
 
-    async function cancelAccount() {
-      const result = (await HttpManager.deleteUser(userId.value)) as ResponseBody;
-      (proxy as any).$message({
-        message: result.message,
-        type: result.type,
-      })
-      routerManager(RouterName.SignIn, { path: RouterName.SignIn })
-      proxy.$store.commit('setToken', false)
-    }
-
-    return {
-      Delete,
-      cancelAccount,
-    }
-  },
-})
+async function cancelAccount() {
+  const result = await HttpManager.deleteUser(userId.value)
+  ElMessage({
+    message: result.message,
+    type: result.type,
+  })
+  routerManager(RouterName.SignIn, { path: RouterName.SignIn })
+  configureStore.setToken(false)
+}
 </script>
 
 <template>
@@ -72,8 +60,7 @@ h1 {
 
 @media screen and (min-width: $sm) {
   .setting {
-    margin: 30px 10%;
-    margin-top: 0;
+    margin: 0 10% 30px;
     padding: 20px;
     min-height: 60vh;
   }

@@ -1,65 +1,60 @@
-<script>
+<script setup lang="ts">
 import axios from 'axios'
+import { ElMessage } from 'element-plus'
+import { ref } from 'vue'
 
-export default {
+const email = ref('')
+const code = ref('')
+const password = ref('')
+const confirmPassword = ref('')
 
-  data() {
-    return {
-      email: '',
-      code: '',
-      password: '',
-      confirmPassword: '',
+async function sendVerificationCode() {
+  try {
+    // Get values directly from the ref instead of using document.getElementById
+    const response = await axios.get('http://localhost:8888/user/sendVerificationCode', ({ params: {
+      email: email.value,
+    } }))
+    ElMessage({
+      message: response.data,
+      type: 'success',
+    })
+  }
+  catch {
+    ElMessage({
+      message: '发送验证码失败',
+      type: 'error',
+    })
+  }
+}
+
+async function handleSubmit() {
+  if (password.value !== confirmPassword.value) {
+    ElMessage({
+      message: '两次输入的密码不一致',
+      type: 'error',
+    })
+    return
+  }
+
+  try {
+    const data = {
+      email: email.value,
+      code: code.value,
+      password: password.value,
+      confirmPassword: confirmPassword.value,
     }
-  },
-  methods: {
-    async sendVerificationCode() {
-      try {
-        const email = document.getElementById('email').value
-        const response = await axios.get('http://localhost:8888/user/sendVerificationCode', ({ params: {
-          email,
-        } }))
-        console.log(response.data)
-        this.$message({
-          message: response.data,
-          type: 'success',
-        })
-      }
-      catch (error) {
-        console.error('Error submitting email:')
-        this.$message({
-          message: 'response.data',
-          type: 'error',
-        })
-      }
-    },
-    async handleSubmit() {
-      try {
-        const email = document.getElementById('email').value
-        const code = document.getElementById('code').value
-        const password = document.getElementById('password').value
-        const confirmPassword = document.getElementById('confirmPassword').value
-        const data = {
-          email,
-          code,
-          password,
-          confirmPassword,
-        }
-        const response = await axios.post('http://localhost:8888/user/resetPassword', data)
-        console.log(response.data)
-        this.$message({
-          message: response.data,
-          type: 'success',
-        })
-      }
-      catch (error) {
-        this.$message({
-          message: 'response.data',
-          type: 'error',
-        })
-      }
-    },
-
-  },
+    const response = await axios.post('http://localhost:8888/user/resetPassword', data)
+    ElMessage({
+      message: response.data,
+      type: 'success',
+    })
+  }
+  catch {
+    ElMessage({
+      message: '重置密码失败',
+      type: 'error',
+    })
+  }
 }
 </script>
 

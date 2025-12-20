@@ -1,18 +1,8 @@
-<script lang="ts">
-import { defineComponent } from 'vue'
+<script setup lang="ts">
 import { Icon } from '@/enums'
 import YinIcon from './YinIcon.vue'
 
-export default defineComponent({
-  components: {
-    YinIcon,
-  },
-  data() {
-    return {
-      icon: Icon.ERJI,
-    }
-  },
-})
+const icon = Icon.HEADPHONES
 </script>
 
 <template>

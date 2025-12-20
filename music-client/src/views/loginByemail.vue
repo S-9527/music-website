@@ -1,68 +1,62 @@
-<script lang="ts">
-import { defineComponent, getCurrentInstance, reactive } from 'vue'
+<script lang="ts" setup>
+import type { FormInstance } from 'element-plus'
+import { ElForm, ElMessage } from 'element-plus'
+import { reactive, ref } from 'vue'
 import { HttpManager } from '@/api'
 import YinLoginLogo from '@/components/layouts/YinLoginLogo.vue'
+import { useApp } from '@/composables/useApp'
 import { NavName, RouterName, SignInRules } from '@/enums'
-import mixin from '@/mixins/mixin'
+import { useConfigureStore, useUserStore } from '@/store'
 
-export default defineComponent({
-  components: {
-    YinLoginLogo,
-  },
-  setup() {
-    const { proxy } = getCurrentInstance()
-    const { routerManager, changeIndex } = mixin()
+const userStore = useUserStore()
+const configureStore = useConfigureStore()
+const { routerManager, changeIndex } = useApp()
 
-    // 登录
-    const registerForm = reactive({
-      email: '',
-      password: '',
+// 登录
+const registerForm = reactive({
+  email: '',
+  password: '',
+})
+
+const signInForm = ref<FormInstance>()
+
+async function handleLoginCancel() {
+  routerManager(RouterName.SignIn, { path: RouterName.SignIn })
+}
+
+async function handleLoginIn() {
+  let canRun = true
+  if (signInForm.value) {
+    signInForm.value.validate((valid) => {
+      if (!valid)
+        return (canRun = false)
+    })
+  }
+  if (!canRun)
+    return
+
+  try {
+    const email = registerForm.email
+    const password = registerForm.password
+    const result = (await HttpManager.signInByemail({ email, password })) as ResponseBody
+    ElMessage({
+      message: result.message,
+      type: result.type,
     })
 
-    async function handleLoginCancel() {
-      routerManager(RouterName.SignIn, { path: RouterName.SignIn })
+    if (result.success) {
+      userStore.setUserId(result.data[0].id)
+      userStore.setUsername(result.data[0].username)
+      userStore.setUserPic(result.data[0].avator)
+      configureStore.setToken(true)
+      changeIndex(NavName.Home)
+      routerManager(RouterName.Home, { path: RouterName.Home })
     }
-
-    async function handleLoginIn() {
-      let canRun = true;
-      (proxy.$refs.signInForm as any).validate((valid) => {
-        if (!valid)
-          return (canRun = false)
-      })
-      if (!canRun)
-        return
-
-      try {
-        const email = registerForm.email
-        const password = registerForm.password
-        const result = (await HttpManager.signInByemail({ email, password })) as ResponseBody;
-        (proxy as any).$message({
-          message: result.message,
-          type: result.type,
-        })
-
-        if (result.success) {
-          proxy.$store.commit('setUserId', result.data[0].id)
-          proxy.$store.commit('setUsername', result.data[0].username)
-          proxy.$store.commit('setUserPic', result.data[0].avator)
-          proxy.$store.commit('setToken', true)
-          changeIndex(NavName.Home)
-          routerManager(RouterName.Home, { path: RouterName.Home })
-        }
-      }
-      catch (error) {
-        console.error(error)
-      }
-    }
-
-    return {
-      registerForm,
-      SignInRules,
-      handleLoginIn,
-      handleLoginCancel,
-    }
-  },
-})
+  }
+  catch (error) {
+    console.error(error)
+  }
+}
 </script>
 
 <template>
@@ -71,7 +65,7 @@ export default defineComponent({
     <div class="sign-head">
       <span>邮箱登录</span>
     </div>
-    <el-form ref="signInForm" status-icon :model="registerForm" :rules="SignInRules">
+    <ElForm ref="signInForm" status-icon :model="registerForm" :rules="SignInRules">
       <el-form-item prop="email">
         <el-input v-model="registerForm.email" placeholder="邮箱" />
       </el-form-item>
@@ -86,7 +80,7 @@ export default defineComponent({
           取消
         </el-button>
       </el-form-item>
-    </el-form>
+    </ElForm>
   </div>
 </template>
 

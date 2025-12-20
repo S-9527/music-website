@@ -1,98 +1,122 @@
-<script lang="ts">
-import { computed, defineComponent, getCurrentInstance, onMounted, reactive } from 'vue'
-import { useStore } from 'vuex'
+<script lang="ts" setup>
+import type { FormInstance } from 'element-plus'
+import { ElMessage } from 'element-plus'
+import { onMounted, reactive, ref } from 'vue'
 import { HttpManager } from '@/api'
+import { useApp } from '@/composables/useApp'
 import { AREA, SignUpRules } from '@/enums'
-import mixin from '@/mixins/mixin'
+import { useUserStore } from '@/store'
 
-export default defineComponent({
-  setup() {
-    const { proxy } = getCurrentInstance()
-    const store = useStore()
-    const { goBack } = mixin()
+const userStore = useUserStore()
+const { goBack } = useApp()
 
-    // 注册
-    const registerForm = reactive({
-      username: '',
-      sex: '',
-      phoneNum: '',
-      email: '',
-      birth: new Date(),
-      introduction: '',
-      location: '',
-      userPic: '',
+// 注册
+const registerForm = reactive({
+  username: '',
+  sex: 2,
+  phoneNum: '',
+  email: '',
+  birth: new Date(),
+  introduction: '',
+  location: '',
+  userPic: '',
+})
+
+// Template ref for form validation
+const updateFormRef = ref<FormInstance>()
+
+async function loadUserInfo() {
+  // User info should already be in the store, so just populate the form
+  if (userStore.userId) {
+    registerForm.username = userStore.username || ''
+    registerForm.sex = userStore.userSex || 2
+    registerForm.phoneNum = userStore.phoneNum || ''
+    registerForm.email = userStore.email || ''
+    registerForm.birth = userStore.birth ? new Date(userStore.birth) : new Date()
+    registerForm.introduction = userStore.introduction || ''
+    registerForm.location = userStore.location || ''
+    registerForm.userPic = userStore.userPic || ''
+  }
+  else {
+    // If not in store, fetch it
+    const result = await HttpManager.getUserOfId(userStore.userId)
+    if (result.data && result.data[0]) {
+      userStore.setUserInfo(result.data[0])
+      loadUserInfo() // Reload form with stored data
+    }
+  }
+}
+
+async function saveMsg() {
+  let canRun = true
+  if (updateFormRef.value) {
+    await updateFormRef.value.validate((valid) => {
+      if (!valid)
+        canRun = false
     })
-    const userId = computed(() => store.getters.userId)
+  }
 
-    async function getUserInfo(id) {
-      const result = (await HttpManager.getUserOfId(id)) as ResponseBody
-      registerForm.username = result.data[0].username
-      registerForm.sex = result.data[0].sex
-      registerForm.phoneNum = result.data[0].phoneNum
-      registerForm.email = result.data[0].email
-      registerForm.birth = result.data[0].birth
-      registerForm.introduction = result.data[0].introduction
-      registerForm.location = result.data[0].location
-      registerForm.userPic = result.data[0].avator
-    }
+  if (!canRun)
+    return
 
-    async function saveMsg() {
-      let canRun = true;
-      (proxy.$refs.updateForm as any).validate((valid) => {
-        if (!valid)
-          return (canRun = false)
-      })
-      if (!canRun)
-        return
-
-      const id = userId.value
-      const username = registerForm.username
-      const sex = registerForm.sex
-      const phoneNum = registerForm.phoneNum
-      const email = registerForm.email
-      const birth = registerForm.birth
-      const introduction = registerForm.introduction
-      const location = registerForm.location
-      const result = (await HttpManager.updateUserMsg({ id, username, sex, phoneNum, email, birth, introduction, location })) as ResponseBody;
-      (proxy as any).$message({
-        message: result.message,
-        type: result.type,
-      })
-      if (result.success) {
-        proxy.$store.commit('setUsername', registerForm.username)
-        goBack(-1)
-      }
-    }
-
-    onMounted(() => {
-      getUserInfo(userId.value)
+  const id = userStore.userId
+  const username = registerForm.username
+  const sex = registerForm.sex
+  const phoneNum = registerForm.phoneNum
+  const email = registerForm.email
+  const birth = registerForm.birth.toISOString().substring(0, 10)
+  const introduction = registerForm.introduction
+  const location = registerForm.location
+  const result = await HttpManager.updateUserMsg({
+    id,
+    username,
+    sex: sex || 2,
+    phoneNum: phoneNum || '',
+    email: email || '',
+    birth: birth || '',
+    introduction: introduction || '',
+    location: location || '',
+  })
+  ElMessage({
+    message: result.message,
+    type: result.type,
+  })
+  if (result.success) {
+    // Update the store with new values
+    userStore.setUserInfo({
+      id: userStore.userId,
+      username: registerForm.username,
+      avator: userStore.userPic,
+      sex: registerForm.sex,
+      birth: registerForm.birth.toISOString().substring(0, 10),
+      location: registerForm.location,
+      introduction: registerForm.introduction,
+      phoneNum: registerForm.phoneNum,
+      email: registerForm.email,
     })
+    goBack(-1)
+  }
+}
 
-    return {
-      AREA,
-      registerForm,
-      SignUpRules,
-      saveMsg,
-      goBack,
-    }
-  },
+onMounted(() => {
+  loadUserInfo()
 })
 </script>
 
 <template>
-  <el-form ref="updateForm" label-width="70px" :model="registerForm" :rules="SignUpRules">
+  <el-form ref="updateFormRef" label-width="70px" :model="registerForm" :rules="SignUpRules">
     <el-form-item prop="username" label="用户名">
       <el-input v-model="registerForm.username" placeholder="用户名" />
     </el-form-item>
     <el-form-item label="性别">
       <el-radio-group v-model="registerForm.sex">
-        <el-radio :label="0">
+        <el-radio :value="0">
           女
         </el-radio>
-        <el-radio :label="1">
+        <el-radio :value="1">
           男
         </el-radio>
-        <el-radio :label="2">
+        <el-radio :value="2">
           保密
         </el-radio>
       </el-radio-group>

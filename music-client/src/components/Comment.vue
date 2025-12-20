@@ -1,132 +1,211 @@
 <script lang="ts" setup>
+import type { Comment } from '@/types'
 import { Delete } from '@element-plus/icons-vue'
-import { computed, defineProps, getCurrentInstance, onMounted, reactive, ref, toRefs, watch } from 'vue'
-import { useStore } from 'vuex'
-
+import { ElMessage } from 'element-plus'
+import { computed, onMounted, reactive, ref, toRefs, watch } from 'vue'
 import { HttpManager } from '@/api'
 import YinIcon from '@/components/layouts/YinIcon.vue'
+import { useApp } from '@/composables/useApp'
 import { Icon } from '@/enums'
-import mixin from '@/mixins/mixin'
+import { useSongStore, useUserStore } from '@/store'
 import { formatDate } from '@/utils'
 
-const props = defineProps({
-  playId: Number || String, // 歌曲ID 或 歌单ID
-  type: Number, // 歌单 1 / 歌曲 0
-})
-const { proxy } = getCurrentInstance()
-const store = useStore()
-const { checkStatus } = mixin()
+// Define props interface
+interface Props {
+  playId?: number | string // 歌曲ID 或 歌单ID
+  type: number // 歌单 1 / 歌曲 0
+}
 
+// Define props with defaults
+const props = withDefaults(defineProps<Props>(), {
+  playId: 0,
+})
+
+// Composables and stores
+const { checkStatus } = useApp()
+const userStore = useUserStore()
+const songStore = useSongStore()
+
+// Destructure props
 const { playId, type } = toRefs(props)
+
+// Reactive state
 const textarea = ref('') // 存放输入内容
-const commentList = ref([]) // 存放评论内容
+const commentList = ref<Comment[]>([]) // 存放评论内容
+const loading = ref(false) // Loading state for API calls
 const iconList = reactive({
-  Support: Icon.Support,
+  Support: Icon.SUPPORT,
 })
 
-const userId = computed(() => store.getters.userId)
-const songId = computed(() => store.getters.songId)
+// Computed properties
+const currentUserId = computed(() => userStore.userId)
+const currentSongId = computed(() => songStore.songId)
 
-watch(songId, () => {
-  getComment(songId.value)
+// Watch for songId changes
+watch(currentSongId, (newSongId) => {
+  if (newSongId) {
+    getComment(newSongId.toString())
+  }
 })
 
+// Lifecycle hooks
 onMounted(() => {
-  getComment(playId.value)
+  getComment(playId.value.toString())
 })
 
-// 获取所有评论
-async function getComment(id) {
+// API methods
+async function getComment(id: string | number) {
+  if (loading.value)
+    return // Prevent duplicate requests
+
+  loading.value = true
   try {
-    const result = (await HttpManager.getAllComment(type.value, id)) as ResponseBody
-    commentList.value = result.data
-    for (let index = 0; index < commentList.value.length; index++) {
-      // 获取评论用户的昵称和头像
-      const resultUser = (await HttpManager.getUserOfId(commentList.value[index].userId)) as ResponseBody
-      commentList.value[index].avator = resultUser.data[0].avator
-      commentList.value[index].username = resultUser.data[0].username
+    const result = await HttpManager.getAllComment(type.value, id.toString())
+    commentList.value = result.data || []
+
+    // Fetch user info for each comment
+    for (const comment of commentList.value) {
+      try {
+        const userResult = await HttpManager.getUserOfId(comment.userId.toString())
+        const user = userResult.data?.[0]
+        if (user) {
+          comment.avator = user.avator
+          comment.username = user.username
+        }
+      }
+      catch (userError) {
+        console.error(`[获取用户信息失败] 用户ID: ${comment.userId}`, userError)
+      }
     }
   }
   catch (error) {
-    console.error('[获取所有评论失败]===>', error)
+    console.error('[获取评论失败]===>', error)
+    ElMessage({
+      message: '获取评论失败',
+      type: 'error',
+    })
+  }
+  finally {
+    loading.value = false
   }
 }
 
-// 提交评论
+// Submit new comment
 async function submitComment() {
   if (!checkStatus())
     return
 
+  const content = textarea.value.trim()
+  if (!content) {
+    ElMessage({
+      message: '评论内容不能为空',
+      type: 'warning',
+    })
+    return
+  }
+
   // 0 代表歌曲， 1 代表歌单
-  let songListId = null
-  let songId = null
-  let nowType = null
-  if (type.value === 1) {
-    nowType = 1
-    songListId = `${playId.value}`
-  }
-  else if (type.value === 0) {
-    nowType = 0
-    songId = `${playId.value}`
+  const commentData = {
+    userId: currentUserId.value,
+    content,
+    songId: type.value === 0 ? playId.value.toString() : undefined,
+    songListId: type.value === 1 ? playId.value.toString() : undefined,
+    nowType: type.value,
   }
 
-  const content = textarea.value
-  const result = (await HttpManager.setComment({ userId: userId.value, content, songId, songListId, nowType })) as ResponseBody;
-  (proxy as any).$message({
-    message: result.message,
-    type: result.type,
-  })
+  try {
+    const result = await HttpManager.setComment(commentData)
+    ElMessage({
+      message: result.message,
+      type: result.type,
+    })
 
-  if (result.success) {
-    textarea.value = ''
-    await getComment(playId.value)
+    if (result.success) {
+      textarea.value = ''
+      await getComment(playId.value.toString())
+    }
+  }
+  catch (error) {
+    console.error('[提交评论失败]===>', error)
+    ElMessage({
+      message: '提交评论失败',
+      type: 'error',
+    })
   }
 }
 
-// 删除评论
-async function deleteComment(id, index) {
-  const result = (await HttpManager.deleteComment(id)) as ResponseBody;
-  (proxy as any).$message({
-    message: result.message,
-    type: result.type,
-  })
+// Delete a comment
+async function deleteComment(commentId: number, index: number) {
+  try {
+    const result = await HttpManager.deleteComment(commentId)
+    ElMessage({
+      message: result.message,
+      type: result.type,
+    })
 
-  if (result.success)
-    commentList.value.splice(index, 1)
+    if (result.success) {
+      commentList.value.splice(index, 1)
+    }
+  }
+  catch (error) {
+    console.error('[删除评论失败]===>', error)
+    ElMessage({
+      message: '删除评论失败',
+      type: 'error',
+    })
+  }
 }
 
-// 点赞  还得再查一下
-async function setSupport(id, up, userId) {
+// Toggle comment support (like/unlike)
+async function toggleSupport(commentId: number, currentUp: number, userId: string) {
   if (!checkStatus())
     return
 
-  let result = null
-  let operatorR = null
-  const commentId = id
-  // 当然可以这么左 直接在判断的时候 进行点赞或者取消
-  const r = (await HttpManager.testAlreadySupport({ commentId, userId })) as ResponseBody;
-  (proxy as any).$message({
-    message: r.message,
-    type: r.type,
-    date: r.data,
-  })
+  try {
+    // Check if user already supported this comment
+    const supportCheck = await HttpManager.testAlreadySupport({ commentId, userId })
 
-  if (r.data) {
-    up = up - 1
-    operatorR = (await HttpManager.deleteUserSupport({ commentId, userId })) as ResponseBody
-    result = (await HttpManager.setSupport({ id, up })) as ResponseBody
+    let newUpCount = currentUp
+    let operationResult
+
+    if (supportCheck.data) {
+      // User already supported, so remove support
+      operationResult = await HttpManager.deleteUserSupport({ commentId, userId })
+      newUpCount = currentUp - 1
+    }
+    else {
+      // User hasn't supported yet, so add support
+      operationResult = await HttpManager.insertUserSupport({ commentId, userId })
+      newUpCount = currentUp + 1
+    }
+
+    // Update the like count
+    const updateResult = await HttpManager.setSupport({ id: commentId, up: newUpCount })
+
+    if (updateResult.success && operationResult.success) {
+      await getComment(playId.value.toString())
+      ElMessage({
+        message: supportCheck.data ? '已取消点赞' : '点赞成功',
+        type: 'success',
+      })
+    }
+    else {
+      ElMessage({
+        message: '操作失败',
+        type: 'error',
+      })
+    }
   }
-  else {
-    up = up + 1
-    operatorR = (await HttpManager.insertUserSupport({ commentId, userId })) as ResponseBody
-    result = (await HttpManager.setSupport({ id, up })) as ResponseBody
-  }
-  if (result.success && operatorR.success) {
-    // proxy.$refs.up[index].children[0].style.color = "#2796dd";
-    await getComment(playId.value)
+  catch (error) {
+    console.error('[点赞操作失败]===>', error)
+    ElMessage({
+      message: '点赞操作失败',
+      type: 'error',
+    })
   }
 }
 
+// Utility functions
 const attachImageUrl = HttpManager.attachImageUrl
 </script>
 
@@ -158,9 +237,9 @@ const attachImageUrl = HttpManager.attachImageUrl
         </ul>
       </div>
       <!-- 这特么是直接拿到了评论的id -->
-      <div ref="up" class="comment-ctr" @click="setSupport(item.id, item.up, userId)">
+      <div class="comment-ctr" @click="toggleSupport(item.id, item.up, currentUserId)">
         <div><YinIcon :icon="iconList.Support" /> {{ item.up }}</div>
-        <el-icon v-if="item.userId === userId" @click="deleteComment(item.id, index)">
+        <el-icon v-if="item.userId.toString() === currentUserId" @click="deleteComment(item.id, index)">
           <Delete />
         </el-icon>
       </div>

@@ -1,38 +1,35 @@
-<script lang="ts">
-import { defineComponent, getCurrentInstance, toRefs } from 'vue'
-
+<script lang="ts" setup>
+import { toRefs } from 'vue'
 import { HttpManager } from '@/api'
 import YinIcon from '@/components/layouts/YinIcon.vue'
+import { useApp } from '@/composables/useApp'
 import { Icon } from '@/enums'
-import mixin from '@/mixins/mixin'
+import { useSongStore } from '@/store'
 
-export default defineComponent({
-  components: {
-    YinIcon,
-  },
-  props: {
-    title: String,
-    playList: Array,
-    path: String,
-  },
-  setup(props) {
-    const { proxy } = getCurrentInstance()
-    const { routerManager } = mixin()
+interface Props {
+  title?: string
+  playList?: any[]
+  path?: string
+}
 
-    const { path } = toRefs(props)
-
-    function goAblum(item) {
-      proxy.$store.commit('setSongDetails', item)
-      routerManager(path.value, { path: `/${path.value}/${item.id}` })
-    }
-
-    return {
-      BOFANG: Icon.BOFANG,
-      goAblum,
-      attachImageUrl: HttpManager.attachImageUrl,
-    }
-  },
+const props = withDefaults(defineProps<Props>(), {
+  playList: () => [],
 })
+
+const { routerManager } = useApp()
+const songStore = useSongStore()
+
+const { path } = toRefs(props)
+
+function goAlbum(item: any) {
+  songStore.setSongDetails(item)
+  routerManager(path.value, { path: `/${path.value}/${item.id}` })
+}
+
+const attachImageUrl = HttpManager.attachImageUrl
+
+// Define PLAY for use in template
+const PLAY = Icon.PLAY
 </script>
 
 <template>
@@ -42,10 +39,10 @@ export default defineComponent({
     </div>
     <ul class="play-body">
       <li v-for="(item, index) in playList" :key="index" class="card-frame">
-        <div class="card" @click="goAblum(item)">
+        <div class="card" @click="goAlbum(item)">
           <el-image class="card-img" fit="contain" :src="attachImageUrl(item.pic)" />
-          <div class="mask" @click="goAblum(item)">
-            <YinIcon class="mask-icon" :icon="BOFANG" />
+          <div class="mask" @click="goAlbum(item)">
+            <YinIcon class="mask-icon" :icon="PLAY" />
           </div>
         </div>
         <p class="card-name">

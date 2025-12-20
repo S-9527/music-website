@@ -1,19 +1,44 @@
+// lucide-vue-next icons mapping
+import { ChevronUp, Download, Headphones, Heart, HeartOff, List, Pause, Play, Repeat, Search, Shuffle, SkipBack, SkipForward, ThumbsUp, Volume, Volume2, VolumeX } from 'lucide-vue-next'
+
+// Export the icons for use as direct imports or through YinIcon component
+export {
+  ChevronUp,
+  Download,
+  Headphones,
+  Heart,
+  HeartOff,
+  List,
+  Pause,
+  Play,
+  Repeat,
+  Search,
+  Shuffle,
+  SkipBack,
+  SkipForward,
+  ThumbsUp,
+  Volume,
+  Volume2,
+  VolumeX,
+}
+
+// For backward compatibility with existing code that uses Icon.XXX
 export const Icon = {
-  BOFANG: '#icon-bofang', // 播放
-  ZANTING: '#icon-zanting', // 暂停
-  YINLIANG: '#icon-yinliang', // 音量有背景
-  YINLIANG1: '#icon-yinliang1', // 音量无背景
-  ERJI: '#icon-erji', // 耳机
-  SOUSUO: '#icon-sousuo', // 搜索
-  XIAZAI: '#icon-xiazai', // 下载
-  ZHEDIE: '#icon-jiantou-xia-cuxiantiao', // 折叠
-  SHANGYISHOU: '#icon-ziyuanldpi', // 上一首
-  XIAYISHOU: '#icon-ziyuanldpi1', // 下一首
-  JINGYIN: '#icon-yinliangjingyinheix', // 静音
-  LIEBIAO: '#icon-liebiao', // 列表
-  Dislike: '#icon-xihuan1', // 未收藏
-  Like: '#icon-xihuan', // 收藏
-  Support: '#icon-zan', // 赞
-  XUNHUAN: '#icon-xunhuan', // 循环
-  LUANXU: '#icon-xunhuan1', // 乱序
+  PLAY: Play, // 播放
+  PAUSE: Pause, // 暂停
+  VOLUME: Volume2, // 音量有背景
+  VOLUME1: Volume2, // 音量无 background (using same icon)
+  HEADPHONES: Headphones, // 耳机
+  SEARCH: Search, // 搜索
+  DOWNLOAD: Download, // 下载
+  FOLD: ChevronUp, // 折叠 (rotated chevron for fold)
+  PREV: SkipBack, // 上一首
+  NEXT: SkipForward, // 下一首
+  MUTE: VolumeX, // 静音
+  LIST: List, // 列表
+  DISLIKE: HeartOff, // 未收藏
+  LIKE: Heart, // 收藏
+  SUPPORT: ThumbsUp, // 赞
+  LOOP: Repeat, // 循环
+  SHUFFLE: Shuffle, // 乱序
 }

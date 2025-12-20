@@ -1,32 +1,20 @@
-<script lang="ts">
-import { computed, defineComponent, getCurrentInstance, onMounted } from 'vue'
-import { useStore } from 'vuex'
-import mixin from '@/mixins/mixin'
+<script lang="ts" setup>
+import { computed, onMounted } from 'vue'
+import { useApp } from '@/composables/useApp'
+import { useConfigureStore, useSongStore } from '@/store'
 
-export default defineComponent({
-  setup() {
-    const { proxy } = getCurrentInstance()
-    const store = useStore()
-    const { getSongTitle, playMusic } = mixin()
+const { getSongTitle, playMusic } = useApp()
+const songStore = useSongStore()
+const configureStore = useConfigureStore()
 
-    const songId = computed(() => store.getters.songId) // 音乐 ID
-    const currentPlayList = computed(() => store.getters.currentPlayList) // 当前播放
-    const showAside = computed(() => store.getters.showAside) // 是否显示侧边栏
+const songId = computed(() => songStore.songId) // 音乐 ID
+const currentPlayList = computed(() => songStore.currentPlayList) // 当前播放
+const showAside = computed(() => configureStore.showAside) // 是否显示侧边栏
 
-    onMounted(() => {
-      document.addEventListener('click', () => {
-        proxy.$store.commit('setShowAside', false)
-      }, true)
-    })
-
-    return {
-      songId,
-      currentPlayList,
-      showAside,
-      getSongTitle,
-      playMusic,
-    }
-  },
+onMounted(() => {
+  document.addEventListener('click', () => {
+    configureStore.setShowAside(false)
+  }, true)
 })
 </script>
 

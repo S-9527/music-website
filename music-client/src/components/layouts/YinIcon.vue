@@ -1,15 +1,30 @@
-<script lang="ts">
-import { defineComponent } from 'vue'
+<script setup lang="ts">
+import type { Component } from 'vue'
 
-export default defineComponent({
-  props: {
-    icon: String,
-  },
+interface Props {
+  icon: Component
+  size?: number
+  color?: string
+}
+
+withDefaults(defineProps<Props>(), {
+  size: 24,
+  color: 'currentColor',
 })
 </script>
 
 <template>
-  <svg class="icon" aria-hidden="true">
-    <use :xlink:href="icon" />
-  </svg>
+  <component
+    :is="icon"
+    :size="size"
+    :color="color"
+    class="icon"
+  />
 </template>
+
+<style scoped>
+.icon {
+  display: inline-block;
+  vertical-align: middle;
+}
+</style>

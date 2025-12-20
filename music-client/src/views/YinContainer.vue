@@ -1,20 +1,44 @@
 <script lang="ts" setup>
-import { getCurrentInstance } from 'vue'
 import YinAudio from '@/components/layouts/YinAudio.vue'
 import YinCurrentPlay from '@/components/layouts/YinCurrentPlay.vue'
 import YinFooter from '@/components/layouts/YinFooter.vue'
 import YinHeader from '@/components/layouts/YinHeader.vue'
 import YinPlayBar from '@/components/layouts/YinPlayBar.vue'
 import YinScrollTop from '@/components/layouts/YinScrollTop.vue'
+import { useConfigureStore, useSongStore, useUserStore } from '@/store'
 
-const { proxy } = getCurrentInstance()
+const configureStore = useConfigureStore()
+const songStore = useSongStore()
+const userStore = useUserStore()
 
-if (sessionStorage.getItem('dataStore')) {
-  proxy.$store.replaceState(Object.assign({}, proxy.$store.state, JSON.parse(sessionStorage.getItem('dataStore'))))
+// Get all store state data for persistence
+function getAllStoreState() {
+  return {
+    configure: configureStore.$state,
+    song: songStore.$state,
+    user: userStore.$state,
+  }
 }
 
+// Restore store state from sessionStorage
+if (sessionStorage.getItem('dataStore')) {
+  const savedState = JSON.parse(sessionStorage.getItem('dataStore')!)
+
+  // Restore each store's state
+  if (savedState.configure) {
+    configureStore.$patch(savedState.configure)
+  }
+  if (savedState.song) {
+    songStore.$patch(savedState.song)
+  }
+  if (savedState.user) {
+    userStore.$patch(savedState.user)
+  }
+}
+
+// Save store states to sessionStorage before unload
 window.addEventListener('beforeunload', () => {
-  sessionStorage.setItem('dataStore', JSON.stringify(proxy.$store.state))
+  sessionStorage.setItem('dataStore', JSON.stringify(getAllStoreState()))
 })
 </script>
 

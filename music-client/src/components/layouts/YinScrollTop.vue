@@ -1,26 +1,19 @@
-<script lang="ts">
-import { defineComponent } from 'vue'
-
-export default defineComponent({
-  setup() {
-    function returnTop() {
-      let timer: number = null
+<script lang="ts" setup>
+function returnTop() {
+  let timer: number | null = null
+  cancelAnimationFrame(timer!)
+  const startTime = new Date()
+  const S = document.body.scrollTop || document.documentElement.scrollTop
+  const T = 500
+  timer = requestAnimationFrame(function func() {
+    const diff: number = new Date().valueOf() - startTime.valueOf()
+    const t = T - Math.max(0, T - diff)
+    document.documentElement.scrollTop = document.body.scrollTop = S - (t * S) / T
+    timer = requestAnimationFrame(func)
+    if (t === T)
       cancelAnimationFrame(timer)
-      const startTime = new Date()
-      const S = document.body.scrollTop || document.documentElement.scrollTop
-      const T = 500
-      timer = requestAnimationFrame(function func() {
-        const diff: number = new Date().valueOf() - startTime.valueOf()
-        const t = T - Math.max(0, T - diff)
-        document.documentElement.scrollTop = document.body.scrollTop = S - (t * S) / T
-        timer = requestAnimationFrame(func)
-        if (t === T)
-          cancelAnimationFrame(timer)
-      })
-    }
-    return { returnTop }
-  },
-})
+  })
+}
 </script>
 
 <template>

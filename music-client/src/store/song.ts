@@ -1,111 +1,160 @@
+import { defineStore } from 'pinia'
+import { ref } from 'vue'
 import { Icon } from '@/enums'
 
-export default {
-  state: {
-    /** 音乐信息 */
-    songId: '', // 音乐 ID
-    songTitle: '', // 歌名
-    songUrl: '', // 音乐 URL
-    songPic: `/img/songPic/tubiao.jpg`, // 歌曲图片
-    singerName: '', //  歌手名
-    lyric: [], // 处理后的歌词数据
+export const useSongStore = defineStore('song', () => {
+  /** 音乐信息 */
+  const songId = ref('') // 音乐 ID
+  const songTitle = ref('') // 歌名
+  const songUrl = ref('') // 音乐 URL
+  const songPic = ref('/img/songPic/tubiao.jpg') // 歌曲图片
+  const singerName = ref('') //  歌手名
+  const lyric = ref<any[]>([]) // 处理后的歌词数据
 
-    /** 音乐播放信息 */
-    isPlay: false, // 播放状态
-    playBtnIcon: Icon.BOFANG, // 播放状态的图标
-    volume: 0, // 音量
-    duration: 0, // 音乐时长
-    curTime: 0, // 当前音乐的播放位置
-    changeTime: 0, // 指定播放时刻
-    autoNext: true, // 用于触发自动播放下一首
+  /** 音乐播放信息 */
+  const isPlay = ref(false) // 播放状态
+  const playBtnIcon = ref(Icon.PLAY) // 播放状态的图标
+  const volume = ref(0) // 音量
+  const duration = ref(0) // 音乐时长
+  const curTime = ref(0) // 当前音乐的播放位置
+  const changeTime = ref(0) // 指定播放时刻
+  const autoNext = ref(true) // 用于触发自动播放下一首
 
-    /** 音乐列表信息 */
-    currentPlayList: [], // 当前播放列表
-    songDetails: null, // 单个歌单信息
-    currentPlayIndex: -1, // 当前歌曲在歌曲列表的位置
-  },
-  getters: {
-    songId: state => state.songId,
-    songTitle: state => state.songTitle,
-    songUrl: state => state.songUrl,
-    songPic: state => state.songPic,
-    singerName: state => state.singerName,
-    lyric: state => state.lyric,
+  /** 音乐列表信息 */
+  const currentPlayList = ref<any[]>([]) // 当前播放列表
+  const songDetails = ref<any>(null) // 单个歌单信息
+  const currentPlayIndex = ref(-1) // 当前歌曲在歌曲列表的位置
 
-    isPlay: state => state.isPlay,
-    playBtnIcon: state => state.playBtnIcon,
-    volume: state => state.volume,
-    duration: state => state.duration,
-    curTime: state => state.curTime,
-    changeTime: state => state.changeTime,
-    autoNext: state => state.autoNext,
+  // Actions
+  function setSongId(newSongId: string) {
+    songId.value = newSongId
+  }
 
-    currentPlayList: state => state.currentPlayList,
-    songDetails: state => state.songDetails,
-    currentPlayIndex: state => state.currentPlayIndex,
-  },
-  mutations: {
-    setSongId: (state, songId) => {
-      state.songId = songId
-    },
-    setSongTitle: (state, songTitle) => {
-      state.songTitle = songTitle
-    },
-    setSongUrl: (state, songUrl) => {
-      state.songUrl = songUrl
-    },
-    setSongPic: (state, songPic) => {
-      state.songPic = songPic
-    },
-    setSingerName: (state, singerName) => {
-      state.singerName = singerName
-    },
-    setAutoNext: (state, autoNext) => {
-      state.autoNext = autoNext
-    },
-    setLyric: (state, lyric) => {
-      state.lyric = lyric
-    },
+  function setSongTitle(newSongTitle: string) {
+    songTitle.value = newSongTitle
+  }
 
-    setIsPlay: (state, isPlay) => {
-      state.isPlay = isPlay
-    },
-    setPlayBtnIcon: (state, playBtnIcon) => {
-      state.playBtnIcon = playBtnIcon
-    },
-    setVolume: (state, volume) => {
-      state.volume = volume
-    },
-    setDuration: (state, duration) => {
-      state.duration = duration
-    },
-    setCurTime: (state, curTime) => {
-      state.curTime = curTime
-    },
-    setChangeTime: (state, changeTime) => {
-      state.changeTime = changeTime
-    },
+  function setSongUrl(newSongUrl: string) {
+    songUrl.value = newSongUrl
+  }
 
-    setCurrentPlayList: (state, currentPlayList) => {
-      state.currentPlayList = currentPlayList
-    },
-    setSongDetails: (state, songDetails) => {
-      state.songDetails = songDetails
-    },
-    setCurrentPlayIndex: (state, currentPlayIndex) => {
-      state.currentPlayIndex = currentPlayIndex
-    },
-  },
-  actions: {
-    playMusic: ({ commit }, { id, url, pic, index, songTitle, singerName, lyric, currentSongList }) => {
-      commit('setSongId', id)
-      commit('setSongUrl', url)
-      commit('setSongPic', pic)
-      commit('setCurrentPlayIndex', index)
-      commit('setSongTitle', songTitle)
-      commit('setSingerName', singerName)
-      commit('setLyric', lyric)
-      commit('setCurrentPlayList', currentSongList)
-    },
-  },
-}
+  function setSongPic(newSongPic: string) {
+    songPic.value = newSongPic
+  }
+
+  function setSingerName(newSingerName: string) {
+    singerName.value = newSingerName
+  }
+
+  function setAutoNext(newAutoNext: boolean) {
+    autoNext.value = newAutoNext
+  }
+
+  function setLyric(newLyric: any[]) {
+    lyric.value = newLyric
+  }
+
+  function setIsPlay(newIsPlay: boolean) {
+    isPlay.value = newIsPlay
+  }
+
+  function setPlayBtnIcon(newPlayBtnIcon: typeof Icon.PLAY) { // Use the same type as the icon
+    playBtnIcon.value = newPlayBtnIcon
+  }
+
+  function setVolume(newVolume: number) {
+    volume.value = newVolume
+  }
+
+  function setDuration(newDuration: number) {
+    duration.value = newDuration
+  }
+
+  function setCurTime(newCurTime: number) {
+    curTime.value = newCurTime
+  }
+
+  function setChangeTime(newChangeTime: number) {
+    changeTime.value = newChangeTime
+  }
+
+  function setCurrentPlayList(newCurrentPlayList: any[]) {
+    currentPlayList.value = newCurrentPlayList
+  }
+
+  function setSongDetails(newSongDetails: any) {
+    songDetails.value = newSongDetails
+  }
+
+  function setCurrentPlayIndex(newCurrentPlayIndex: number) {
+    currentPlayIndex.value = newCurrentPlayIndex
+  }
+
+  function playMusic({
+    id,
+    url,
+    pic,
+    index,
+    songTitle: newSongTitle,
+    singerName: newSingerName,
+    lyric: newLyric,
+    currentSongList,
+  }: {
+    id: string
+    url: string
+    pic: string
+    index: number
+    songTitle: string
+    singerName: string
+    lyric: any[]
+    currentSongList: any[]
+  }) {
+    setSongId(id)
+    setSongUrl(url)
+    setSongPic(pic)
+    setCurrentPlayIndex(index)
+    setSongTitle(newSongTitle)
+    setSingerName(newSingerName)
+    setLyric(newLyric)
+    setCurrentPlayList(currentSongList)
+  }
+
+  return {
+    // State
+    songId,
+    songTitle,
+    songUrl,
+    songPic,
+    singerName,
+    lyric,
+    isPlay,
+    playBtnIcon,
+    volume,
+    duration,
+    curTime,
+    changeTime,
+    autoNext,
+    currentPlayList,
+    songDetails,
+    currentPlayIndex,
+
+    // Actions
+    setSongId,
+    setSongTitle,
+    setSongUrl,
+    setSongPic,
+    setSingerName,
+    setAutoNext,
+    setLyric,
+    setIsPlay,
+    setPlayBtnIcon,
+    setVolume,
+    setDuration,
+    setCurTime,
+    setChangeTime,
+    setCurrentPlayList,
+    setSongDetails,
+    setCurrentPlayIndex,
+    playMusic,
+  }
+})

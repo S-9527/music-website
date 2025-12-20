@@ -1,4 +1,4 @@
-export const enum RouterName {
+export enum RouterName {
   Home = '/',
   SongSheet = '/song-sheet',
   SongSheetDetail = '/song-sheet-detail',

@@ -1,96 +1,77 @@
-<script lang="ts">
+<script lang="ts" setup>
+import type { Song } from '@/types'
 import { Delete, Download, MoreFilled } from '@element-plus/icons-vue'
-import { computed, defineComponent, getCurrentInstance, reactive, toRefs } from 'vue'
-import { useStore } from 'vuex'
-
+import { ElMessage } from 'element-plus'
+import { computed, toRefs } from 'vue'
 import { HttpManager } from '@/api'
-import { Icon } from '@/enums'
-import mixin from '@/mixins/mixin'
+import { useApp } from '@/composables/useApp'
+import { useUserStore } from '@/store'
 
-export default defineComponent({
-  components: {
-    MoreFilled,
-  },
-  props: {
-    songList: Array,
-    show: {
-      default: false,
-    },
-  },
-  emits: ['changeData'],
-  setup(props) {
-    const { getSongTitle, getSingerName, playMusic, checkStatus, downloadMusic } = mixin()
-    const { proxy } = getCurrentInstance()
-    const store = useStore()
+interface Props {
+  songList?: Song[]
+  show?: boolean
+}
 
-    const { songList } = toRefs(props)
-
-    const iconList = reactive({
-      dislike: Icon.Dislike,
-      like: Icon.Like,
-    })
-
-    const songUrl = computed(() => store.getters.songUrl)
-    const singerName = computed(() => store.getters.singerName)
-    const songTitle = computed(() => store.getters.songTitle)
-    const dataList = computed(() => {
-      const list = []
-      songList.value.forEach((item: any, index) => {
-        item.songName = getSongTitle(item.name)
-        item.singerName = getSingerName(item.name)
-        item.index = index
-        list.push(item)
-      })
-      return list
-    })
-
-    function handleClick(row) {
-      playMusic({
-        id: row.id,
-        url: row.url,
-        pic: row.pic,
-        index: row.index,
-        name: row.name,
-        lyric: row.lyric,
-        currentSongList: songList.value,
-      })
-    }
-
-    function handleEdit(row) {
-      console.log('row', row)
-    }
-
-    const userId = computed(() => store.getters.userId)
-
-    async function deleteCollection({ id }) {
-      if (!checkStatus())
-        return
-
-      const result = (await HttpManager.deleteCollection(userId.value, id)) as ResponseBody;
-      (proxy as any).$message({
-        message: result.message,
-        type: result.type,
-      })
-
-      if (result.data === false)
-        proxy.$emit('changeData', result.data)
-    }
-
-    return {
-      dataList,
-      iconList,
-      Delete,
-      Download,
-      songUrl,
-      singerName,
-      songTitle,
-      handleClick,
-      handleEdit,
-      downloadMusic,
-      deleteCollection,
-    }
-  },
+const props = withDefaults(defineProps<Props>(), {
+  songList: () => [],
+  show: false,
 })
+
+const emit = defineEmits<{
+  (e: 'changeData', data: any): void
+}>()
+
+const { getSongTitle, getSingerName, playMusic, checkStatus, downloadMusic } = useApp()
+const userStore = useUserStore()
+
+const { songList } = toRefs(props)
+
+const dataList = computed(() => {
+  const list: Song[] = []
+  songList.value.forEach((item: Song, index: number) => {
+    item.songName = getSongTitle(item.name)
+    item.singerName = getSingerName(item.name)
+    item.index = index
+    list.push(item)
+  })
+  return list
+})
+
+function handleClick(row: Song) {
+  playMusic({
+    id: row.id,
+    url: row.url,
+    pic: row.pic,
+    index: row.index || 0,
+    name: row.name,
+    lyric: row.lyric,
+    currentSongList: songList.value,
+  })
+}
+
+function handleEdit(_row: Song) {
+  return _row
+}
+
+/**
+ * 删除收藏
+ * @param id
+ */
+async function deleteCollection({ id }: { id: string }) {
+  if (!checkStatus()) {
+    return
+  }
+
+  const result = await HttpManager.deleteCollection(userStore.userId, id)
+  ElMessage({
+    message: result.message,
+    type: result.type,
+  })
+
+  if (result.success) {
+    emit('changeData', result.data)
+  }
+}
 </script>
 
 <template>

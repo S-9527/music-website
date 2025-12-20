@@ -1,38 +1,25 @@
-<script lang="ts">
-import { defineComponent } from 'vue'
+<script setup lang="ts">
+import { ref } from 'vue'
 import YinNav from '@/components/layouts/YinNav.vue'
-import SearchSong from './SearchSong.vue'
-import SearchSongList from './SearchSongList.vue'
 
-export default defineComponent({
-  components: {
-    YinNav,
-    SearchSong,
-    SearchSongList,
+const searchNavList = [
+  {
+    name: '歌曲',
+    value: 'SearchSong',
   },
-  data() {
-    return {
-      searchNavList: [
-        {
-          name: '歌曲',
-          value: 'SearchSong',
-        },
-        {
-          name: '歌单',
-          value: 'SearchSongList',
-        },
-      ],
-      activeName: '歌曲',
-      currentView: 'SearchSong',
-    }
+  {
+    name: '歌单',
+    value: 'SearchSongList',
   },
-  methods: {
-    handleChangeView(item) {
-      this.activeName = item.name
-      this.currentView = item.value
-    },
-  },
-})
+]
+
+const activeName = ref('歌曲')
+const currentView = ref('SearchSong')
+
+function handleChangeView(item: { name: string, value: string }) {
+  activeName.value = item.name
+  currentView.value = item.value
+}
 </script>
 
 <template>
