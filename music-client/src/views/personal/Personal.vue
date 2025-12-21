@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import type { Song } from '@/types'
 import { Edit } from '@element-plus/icons-vue'
 import { computed, nextTick, ref, watch } from 'vue'
 import { HttpManager } from '@/api'
@@ -15,7 +16,7 @@ const { gotoSetting } = useGoto()
 const attachImageUrl = HttpManager.attachImageUrl
 
 const dialogTableVisible = ref(false)
-const collectSongList = ref([]) // 收藏的歌曲
+const collectSongList = ref<Song[]>([]) // 收藏的歌曲
 
 const userId = computed(() => userStore.userId)
 const userPic = computed(() => userStore.userPic)
@@ -41,8 +42,10 @@ async function getCollection(userId: string) {
       continue
     }
 
-    const result = await HttpManager.getSongOfId(item.songId)
-    collectSongList.value.push(result.data[0])
+    const songResult = await HttpManager.getSongOfId(item.songId)
+    if (songResult.data && songResult.data[0]) {
+      collectSongList.value.push(songResult.data[0])
+    }
   }
 }
 

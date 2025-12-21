@@ -1,3 +1,4 @@
+import type { ResponseBody } from '@/types'
 import { bannerAPI } from './modules/banner.ts'
 import { collectionAPI } from './modules/collection.ts'
 import { commentAPI } from './modules/comment.ts'
@@ -11,7 +12,7 @@ import { getBaseURL } from './request'
 
 const HttpManager = {
   // 获取图片信息
-  attachImageUrl: (url: any) => url ? `${getBaseURL()}/${url}` : 'https://cube.elemecdn.com/e/fd/0fc7d20532fdaf769a25683617711png.png',
+  attachImageUrl: (url: string) => url ? `${getBaseURL()}/${url}` : 'https://cube.elemecdn.com/e/fd/0fc7d20532fdaf769a25683617711png.png',
   ...userAPI,
   ...songListAPI,
   ...singerAPI,
@@ -24,3 +25,4 @@ const HttpManager = {
 }
 
 export { HttpManager }
+export type { ResponseBody }

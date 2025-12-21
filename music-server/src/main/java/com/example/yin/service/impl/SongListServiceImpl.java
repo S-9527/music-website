@@ -1,6 +1,7 @@
 package com.example.yin.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.yin.common.R;
 import com.example.yin.controller.MinioUploadController;
@@ -48,8 +49,9 @@ public class SongListServiceImpl extends ServiceImpl<SongListMapper, SongList> i
     }
 
     @Override
-    public R allSongList() {
-        return R.success(null, songListMapper.selectList(null));
+    public R allSongList(Page<SongList> page) {
+        Page<SongList> songListPage = songListMapper.selectPage(page, null);
+        return R.success("获取歌单列表成功", songListPage);
     }
 
     @Override
@@ -60,17 +62,19 @@ public class SongListServiceImpl extends ServiceImpl<SongListMapper, SongList> i
 
 
     @Override
-    public R likeTitle(String title) {
+    public R likeTitle(String title, Page<SongList> page) {
         QueryWrapper<SongList> queryWrapper = new QueryWrapper<>();
-        queryWrapper.like("title",title);
-        return R.success(null, songListMapper.selectList(queryWrapper));
+        queryWrapper.like("title", title);
+        Page<SongList> songListPage = songListMapper.selectPage(page, queryWrapper);
+        return R.success("根据标题搜索歌单成功", songListPage);
     }
 
     @Override
-    public R likeStyle(String style) {
+    public R likeStyle(String style, Page<SongList> page) {
         QueryWrapper<SongList> queryWrapper = new QueryWrapper<>();
-        queryWrapper.like("style",style);
-        return R.success(null, songListMapper.selectList(queryWrapper));
+        queryWrapper.like("style", style);
+        Page<SongList> songListPage = songListMapper.selectPage(page, queryWrapper);
+        return R.success("根据风格搜索歌单成功", songListPage);
     }
 
     @Override

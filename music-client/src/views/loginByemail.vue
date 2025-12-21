@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { FormInstance } from 'element-plus'
+import type { ResponseBody } from '@/types'
 import { ElForm, ElMessage } from 'element-plus'
 import { reactive, ref } from 'vue'
 import { HttpManager } from '@/api'
@@ -29,9 +30,10 @@ async function handleLoginCancel() {
 async function handleLoginIn() {
   let canRun = true
   if (signInForm.value) {
-    signInForm.value.validate((valid) => {
-      if (!valid)
-        return (canRun = false)
+    signInForm.value.validate((valid: boolean) => {
+      if (!valid) {
+        canRun = false
+      }
     })
   }
   if (!canRun)
@@ -42,8 +44,8 @@ async function handleLoginIn() {
     const password = registerForm.password
     const result = (await HttpManager.signInByemail({ email, password })) as ResponseBody
     ElMessage({
-      message: result.message,
-      type: result.type,
+      message: result.message || '登录成功',
+      type: (result.type as 'success' | 'error' | 'warning') || 'success',
     })
 
     if (result.success) {

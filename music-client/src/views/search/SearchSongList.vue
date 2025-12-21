@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import type { SongList } from '@/types'
 import { ElMessage } from 'element-plus'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
@@ -9,14 +10,14 @@ import { useConfigureStore } from '@/store'
 const configureStore = useConfigureStore()
 const route = useRoute()
 
-const playList = ref([])
-const searchWord = computed(() => configureStore.getSearchWord)
+const playList = ref<SongList[]>([])
+const searchWord = computed(() => configureStore.searchWord)
 
-watch(searchWord, (value) => {
+watch(searchWord, (value: string) => {
   getSearchList(value)
 })
 
-async function getSearchList(value) {
+async function getSearchList(value: string) {
   if (!value)
     return
   const result = await HttpManager.getSongListOfLikeTitle(value)
@@ -27,7 +28,7 @@ async function getSearchList(value) {
     })
   }
   else {
-    playList.value = result.data
+    playList.value = result.data as SongList[]
   }
 }
 

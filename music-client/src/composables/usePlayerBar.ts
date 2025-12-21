@@ -52,7 +52,7 @@ export function usePlayerBar() {
   const {
     // Computed properties
     showAside,
-// Functions
+    // Functions
     changeAside,
     goPlayerPage,
   } = useNavigation()

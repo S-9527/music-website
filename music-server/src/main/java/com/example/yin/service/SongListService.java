@@ -1,5 +1,6 @@
 package com.example.yin.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.yin.common.R;
 import com.example.yin.model.domain.SongList;
@@ -18,11 +19,11 @@ public interface SongListService extends IService<SongList> {
 
     R deleteSongList(Integer id);
 
-    R allSongList();
+    R allSongList(Page<SongList> page);
 
     List<SongList> findAllSong();
 
-    R likeTitle(String title);
+    R likeTitle(String title, Page<SongList> page);
 
-    R likeStyle(String style);
+    R likeStyle(String style, Page<SongList> page);
 }

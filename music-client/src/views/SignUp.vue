@@ -32,9 +32,10 @@ async function goBackRegister() {
 async function handleSignUp() {
   let canRun = true
   if (signUpForm.value) {
-    signUpForm.value.validate((valid) => {
-      if (!valid)
-        return (canRun = false)
+    signUpForm.value.validate((valid: boolean) => {
+      if (!valid) {
+        canRun = false
+      }
     })
   }
   if (!canRun)

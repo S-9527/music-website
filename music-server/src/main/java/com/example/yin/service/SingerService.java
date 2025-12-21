@@ -1,5 +1,6 @@
 package com.example.yin.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.yin.common.R;
 import com.example.yin.model.domain.Singer;
@@ -16,9 +17,9 @@ public interface SingerService extends IService<Singer> {
 
     R deleteSinger(Integer id);
 
-    R allSinger();
+    R allSinger(Page<Singer> page);
 
-    R singerOfName(String name);
+    R singerOfName(String name, Page<Singer> page);
 
-    R singerOfSex(Integer sex);
+    R singerOfSex(Integer sex, Page<Singer> page);
 }

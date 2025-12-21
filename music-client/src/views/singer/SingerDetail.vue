@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import type { Song } from '@/types'
 import { computed, onMounted, ref } from 'vue'
 import { HttpManager } from '@/api'
 import SongList from '@/components/SongList.vue'
@@ -9,21 +10,16 @@ import { getBirth } from '@/utils'
 const songStore = useSongStore()
 const { getUserSex } = useApp()
 
-const currentSongList = ref([])
+const currentSongList = ref<Song[]>([])
 const songDetails = computed(() => songStore.songDetails)
 
 // Define attachImageUrl for use in template
 const attachImageUrl = HttpManager.attachImageUrl
 
 onMounted(async () => {
-  try {
-    if (songDetails.value?.id) {
-      const result = await HttpManager.getSongOfSingerId(songDetails.value.id)
-      currentSongList.value = result.data
-    }
-  }
-  catch (error) {
-    console.error(error)
+  if (songDetails.value?.id) {
+    const result = await HttpManager.getSongOfSingerId(songDetails.value.id)
+    currentSongList.value = result.data || []
   }
 })
 </script>

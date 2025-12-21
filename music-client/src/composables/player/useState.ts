@@ -12,7 +12,7 @@ export function usePlayerState() {
   const nowTime = ref(0) // Progress bar position
   const volume = ref(50)
   const playState = ref(Icon.LOOP)
-  const playStateList = ref([Icon.LOOP, Icon.SHUFFLE])
+  const playStateList = ref([Icon.LOOP, Icon.SHUFFLE].filter(Boolean))
   const playStateIndex = ref(0)
 
   // Song Store getters
@@ -62,8 +62,8 @@ export function usePlayerState() {
   }
 
   function changePlayState() {
-    playStateIndex.value = playStateIndex.value >= playStateList.value.length - 1 ? 0 : ++playStateIndex.value
-    playState.value = playStateList.value[playStateIndex.value]
+    playStateIndex.value = playStateIndex.value >= playStateList.value.length - 1 ? 0 : playStateIndex.value + 1
+    playState.value = playStateList.value[playStateIndex.value] || Icon.LOOP
   }
 
   // Function to update time

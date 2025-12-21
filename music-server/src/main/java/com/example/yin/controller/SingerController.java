@@ -1,6 +1,8 @@
 package com.example.yin.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.yin.common.R;
+import com.example.yin.model.domain.Singer;
 import com.example.yin.model.request.SingerRequest;
 import com.example.yin.service.SingerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,22 +28,30 @@ public class SingerController {
         return singerService.deleteSinger(id);
     }
 
-    // 返回所有歌手
+    // 返回所有歌手（支持分页，默认每页10条）
     @GetMapping("/singer")
-    public R allSinger() {
-        return singerService.allSinger();
+    public R allSinger(@RequestParam(defaultValue = "1") Integer pageNum,
+                       @RequestParam(defaultValue = "10") Integer pageSize) {
+        Page<Singer> page = new Page<>(pageNum, pageSize);
+        return singerService.allSinger(page);
     }
 
-    // 根据歌手名查找歌手
+    // 根据歌手名查找歌手（支持分页，默认每页10条）
     @GetMapping("/singer/name/detail")
-    public R singerOfName(@RequestParam String name) {
-        return singerService.singerOfName(name);
+    public R singerOfName(@RequestParam String name,
+                          @RequestParam(defaultValue = "1") Integer pageNum,
+                          @RequestParam(defaultValue = "10") Integer pageSize) {
+        Page<Singer> page = new Page<>(pageNum, pageSize);
+        return singerService.singerOfName(name, page);
     }
 
-    // 根据歌手性别查找歌手
+    // 根据歌手性别查找歌手（支持分页，默认每页10条）
     @GetMapping("/singer/sex/detail")
-    public R singerOfSex(@RequestParam int sex) {
-        return singerService.singerOfSex(sex);
+    public R singerOfSex(@RequestParam int sex,
+                         @RequestParam(defaultValue = "1") Integer pageNum,
+                         @RequestParam(defaultValue = "10") Integer pageSize) {
+        Page<Singer> page = new Page<>(pageNum, pageSize);
+        return singerService.singerOfSex(sex, page);
     }
 
     // 更新歌手信息

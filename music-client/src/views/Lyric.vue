@@ -51,25 +51,24 @@ onMounted(() => {
   }
 })
 
-// Clean up on component unmount
-onUnmounted(() => {
-  // Reset any DOM manipulations if needed
-})
-
 // Function to update lyric display based on current time
 function updateLyricDisplay() {
-  if (lyricArr.value.length === 0)
+  if (lyricArr.value.length === 0) {
     return
+  }
 
   // Find the current lyric line based on time
   let currentIndex = -1
   for (let i = 0; i < lyricArr.value.length; i++) {
-    const lyricTime = lyricArr.value[i][0]
-    if (curTime.value >= lyricTime) {
-      currentIndex = i
+    const lyricLine = lyricArr.value[i]
+    if (!lyricLine)
+      continue
+    const lyricTime = lyricLine[0]
+    if (curTime.value < lyricTime) {
+      break
     }
     else {
-      break
+      currentIndex = i
     }
   }
 
@@ -87,8 +86,10 @@ function updateLyricDisplay() {
     // Highlight the current lyric line
     if (lyricElements[currentIndex]) {
       const currentElement = lyricElements[currentIndex]
-      currentElement.style.color = '#95d2f6'
-      currentElement.style.fontSize = '18px'
+      if (currentElement) {
+        currentElement.style.color = '#95d2f6'
+        currentElement.style.fontSize = '18px'
+      }
     }
 
     // Update the scroll position

@@ -21,7 +21,7 @@ const form = reactive({
 const userId = computed(() => userStore.userId)
 const userName = computed(() => userStore.username)
 
-function validateCheck(rule: any, value: any, callback: any) {
+function validateCheck(_rule: any, value: any, callback: any) {
   if (value === '') {
     callback(new Error('密码不能为空'))
   }

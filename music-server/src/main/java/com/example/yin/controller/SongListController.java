@@ -1,6 +1,8 @@
 package com.example.yin.controller;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.yin.common.R;
+import com.example.yin.model.domain.SongList;
 import com.example.yin.model.request.SongListRequest;
 import com.example.yin.service.SongListService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,23 +28,30 @@ public class SongListController {
         return songListService.deleteSongList(id);
     }
 
-    //TODO 这块就是前端显现相应的歌单list
-    // 返回所有歌单
+    // 返回所有歌单（支持分页，默认每页10条）
     @GetMapping("/songList")
-    public R allSongList() {
-        return songListService.allSongList();
+    public R allSongList(@RequestParam(defaultValue = "1") Integer pageNum,
+                         @RequestParam(defaultValue = "10") Integer pageSize) {
+        Page<SongList> page = new Page<>(pageNum, pageSize);
+        return songListService.allSongList(page);
     }
 
-    // 返回标题包含文字的歌单
+    // 返回标题包含文字的歌单（支持分页，默认每页10条）
     @GetMapping("/songList/likeTitle/detail")
-    public R songListOfLikeTitle(@RequestParam String title) {
-        return songListService.likeTitle('%' + title + '%');
+    public R songListOfLikeTitle(@RequestParam String title,
+                                 @RequestParam(defaultValue = "1") Integer pageNum,
+                                 @RequestParam(defaultValue = "10") Integer pageSize) {
+        Page<SongList> page = new Page<>(pageNum, pageSize);
+        return songListService.likeTitle('%' + title + '%', page);
     }
 
-    // 返回指定类型的歌单
+    // 返回指定类型的歌单（支持分页，默认每页10条）
     @GetMapping("/songList/style/detail")
-    public R songListOfStyle(@RequestParam String style) {
-        return songListService.likeStyle('%' + style + '%');
+    public R songListOfStyle(@RequestParam String style,
+                             @RequestParam(defaultValue = "1") Integer pageNum,
+                             @RequestParam(defaultValue = "10") Integer pageSize) {
+        Page<SongList> page = new Page<>(pageNum, pageSize);
+        return songListService.likeStyle('%' + style + '%', page);
     }
 
     // 更新歌单信息

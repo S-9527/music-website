@@ -30,39 +30,25 @@ async function handleLoginIn() {
     }
   }
 
-  try {
-    const username = registerForm.username
-    const password = registerForm.password
-    const result = (await HttpManager.signIn({ username, password }))
-    ElMessage({
-      message: result.message,
-      type: result.type,
-    })
+  const username = registerForm.username
+  const password = registerForm.password
+  const result = await HttpManager.signIn(
+    { username, password },
+  )
 
-    if (result.success) {
-      userStore.setUserId(result.data[0].id)
-      userStore.setUsername(result.data[0].username)
-      userStore.setUserPic(result.data[0].avator)
-      configureStore.setToken(true)
-      changeIndex(NavName.Home)
-      gotoHome()
-    }
+  ElMessage({
+    message: result.message,
+    type: result.type,
+  })
+
+  if (result.success) {
+    userStore.setUserId(result.data[0].id)
+    userStore.setUsername(result.data[0].username)
+    userStore.setUserPic(result.data[0].avator)
+    configureStore.setToken(true)
+    changeIndex(NavName.Home)
+    gotoHome()
   }
-  catch (error) {
-    console.error(error)
-  }
-}
-
-function handleSignUp() {
-  gotoSignUp()
-}
-
-function handleForgotPassword() {
-  gotoForgotPassword()
-}
-
-function handleEmail() {
-  gotoLoginByEmail()
 }
 </script>
 
@@ -77,19 +63,22 @@ function handleEmail() {
         <el-input v-model="registerForm.username" placeholder="用户名" />
       </el-form-item>
       <el-form-item prop="password">
-        <el-input v-model="registerForm.password" type="password" placeholder="密码" @keyup.enter="handleLoginIn" />
+        <el-input
+          v-model="registerForm.password" type="password" placeholder="密码"
+          @keyup.enter="handleLoginIn"
+        />
       </el-form-item>
       <el-form-item class="sign-btn">
-        <el-button @click="handleSignUp">
+        <el-button @click="gotoSignUp">
           注册
         </el-button>
         <el-button type="primary" @click="handleLoginIn">
           登录
         </el-button>
-        <el-button @click="handleForgotPassword">
+        <el-button @click="gotoForgotPassword">
           忘记密码
         </el-button>
-        <el-button @click="handleEmail">
+        <el-button @click="gotoLoginByEmail">
           邮箱登录
         </el-button>
       </el-form-item>

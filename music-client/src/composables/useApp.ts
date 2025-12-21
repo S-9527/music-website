@@ -1,3 +1,4 @@
+import type { Song } from '@/types'
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import { computed } from 'vue'
@@ -11,13 +12,7 @@ export function useApp() {
   const token = computed(() => configureStore.token)
 
   function getUserSex(sex: number): string {
-    if (sex === 0) {
-      return '女'
-    }
-    else if (sex === 1) {
-      return '男'
-    }
-    return ''
+    return sex === 0 ? '女' : '男'
   }
 
   // 获取歌曲名
@@ -52,7 +47,7 @@ export function useApp() {
     index: number
     name: string
     lyric: any[]
-    currentSongList: any[]
+    currentSongList: Song[]
   }) {
     const songTitle = getSongTitle(name)
     const singerName = getSingerName(name)

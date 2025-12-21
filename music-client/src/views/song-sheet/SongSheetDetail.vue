@@ -1,4 +1,5 @@
 <script lang="ts" setup>
+import type { Song } from '@/types'
 import { ElMessage } from 'element-plus'
 import { computed, ref } from 'vue'
 import { HttpManager } from '@/api'
@@ -14,7 +15,7 @@ const { checkStatus } = useApp()
 // Define attachImageUrl for use in template
 const attachImageUrl = HttpManager.attachImageUrl
 
-const currentSongList = ref([]) // 存放的音乐
+const currentSongList = ref<Song[]>([]) // 存放的音乐
 const nowSongListId = ref('') // 歌单 ID
 const nowScore = ref(0)
 const nowRank = ref(0)
@@ -32,22 +33,24 @@ const rank = nowRank
 const songListId = nowSongListId
 
 // 收集歌单里面的歌曲
-async function getSongId(id) {
+async function getSongId(id: string) {
   const result = await HttpManager.getListSongOfSongId(id)
   // 获取歌单里的歌曲信息
   currentSongList.value = [] // 清空之前的列表
   for (const item of result.data) {
     // 获取单里的歌曲
     const resultSong = await HttpManager.getSongOfId(item.songId)
-    currentSongList.value.push(resultSong.data[0])
+    if (resultSong.data && resultSong.data[0]) {
+      currentSongList.value.push(resultSong.data[0])
+    }
   }
 }
 // 获取评分
-async function getRank(id) {
+async function getRank(id: string) {
   const result = await HttpManager.getRankOfSongListId(id)
-  nowRank.value = result.data / 2
+  nowRank.value = (result.data || 0) / 2
 }
-async function getUserRank(userId, songListIdParam) {
+async function getUserRank(userId: string, songListIdParam: string) {
   const result = await HttpManager.getUserRank(userId, songListIdParam)
   nowScore.value = result.data / 2
   disabledRank.value = true

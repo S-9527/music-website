@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useApp } from '@/composables/useApp'
 import { usePlayerBar } from '@/composables/usePlayerBar'
+import { Icon } from '@/enums'
 import YinIcon from './YinIcon.vue'
 
 // Use the player bar composable to get all state and functions
@@ -65,7 +66,7 @@ const toggle = ref(true)
         </div>
       </div>
       <div class="song-ctr">
-        <YinIcon class="yin-play-show" :icon="playStateList[playStateIndex]" @click="changePlayState" />
+        <YinIcon class="yin-play-show" :icon="playStateList[playStateIndex] || Icon.LOOP" @click="changePlayState" />
         <!-- 上一首 -->
         <YinIcon class="yin-play-show" :icon="iconList.PREV" @click="prev" />
         <!-- 播放 -->

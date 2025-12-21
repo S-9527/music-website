@@ -222,7 +222,7 @@ const attachImageUrl = HttpManager.attachImageUrl
   </div>
   <ul class="popular">
     <li v-for="(item, index) in commentList" :key="index">
-      <el-image class="popular-img" fit="contain" :src="attachImageUrl(item.avator)" />
+      <el-image class="popular-img" fit="contain" :src="attachImageUrl(item.avator || '')" />
       <div class="popular-msg">
         <ul>
           <li class="name">

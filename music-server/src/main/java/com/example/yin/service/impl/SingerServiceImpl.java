@@ -1,6 +1,7 @@
 package com.example.yin.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.yin.common.R;
 import com.example.yin.controller.MinioUploadController;
@@ -58,8 +59,9 @@ public class SingerServiceImpl extends ServiceImpl<SingerMapper, Singer> impleme
     }
 
     @Override
-    public R allSinger() {
-        return R.success(null, singerMapper.selectList(null));
+    public R allSinger(Page<Singer> page) {
+        Page<Singer> singerPage = singerMapper.selectPage(page, null);
+        return R.success("获取歌手列表成功", singerPage);
     }
 
     @Override
@@ -76,16 +78,18 @@ public class SingerServiceImpl extends ServiceImpl<SingerMapper, Singer> impleme
     }
 
     @Override
-    public R singerOfName(String name) {
+    public R singerOfName(String name, Page<Singer> page) {
         QueryWrapper<Singer> queryWrapper = new QueryWrapper<>();
         queryWrapper.like("name", name);
-        return R.success(null, singerMapper.selectList(queryWrapper));
+        Page<Singer> singerPage = singerMapper.selectPage(page, queryWrapper);
+        return R.success("根据姓名搜索歌手成功", singerPage);
     }
 
     @Override
-    public R singerOfSex(Integer sex) {
+    public R singerOfSex(Integer sex, Page<Singer> page) {
         QueryWrapper<Singer> queryWrapper = new QueryWrapper<>();
-        queryWrapper.like("sex", sex);
-        return R.success(null, singerMapper.selectList(queryWrapper));
+        queryWrapper.eq("sex", sex); // Changed from like to eq for exact match on sex field
+        Page<Singer> singerPage = singerMapper.selectPage(page, queryWrapper);
+        return R.success("根据性别搜索歌手成功", singerPage);
     }
 }

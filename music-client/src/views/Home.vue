@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import type { Singer, SongList, SwiperItem } from '@/types'
+import type { PageResult, Singer, SongList, SwiperItem } from '@/types'
 import { onMounted, ref } from 'vue'
 import { HttpManager } from '@/api'
 import PlayList from '@/components/PlayList.vue'
@@ -12,22 +12,21 @@ const songList = ref<SongList[]>([]) // 歌单列表
 const singerList = ref<Singer[]>([]) // 歌手列表
 const swiperList = ref<SwiperItem[]>([])// 轮播图 每次都在进行查询
 
-try {
   HttpManager.getBannerList().then((res) => {
     swiperList.value = res.data.sort()
   })
 
-  HttpManager.getSongList().then((res) => {
-    songList.value = res.data.sort().slice(0, 10)
+  // Get first page of song lists (default 10 items per page)
+  HttpManager.getSongList({ pageNum: 1, pageSize: 10 }).then((res) => {
+    const pageResult = res.data as PageResult<SongList>
+    songList.value = pageResult.records.sort()
   })
 
-  HttpManager.getAllSinger().then((res) => {
-    singerList.value = res.data.sort().slice(0, 10)
+  // Get first page of singers (default 10 items per page)
+  HttpManager.getAllSinger({ pageNum: 1, pageSize: 10 }).then((res) => {
+    const pageResult = res.data as PageResult<Singer>
+    singerList.value = pageResult.records.sort()
   })
-}
-catch (error) {
-  console.error(error)
-}
 
 onMounted(() => {
   changeIndex(NavName.Home)

@@ -126,7 +126,7 @@ const attachImageUrl = HttpManager.attachImageUrl
 </script>
 
 <template>
-  <audio :ref="setAudioRef" :src="attachImageUrl(songUrl)" controls="controls" preload="metadata" @canplay="canplay" @timeupdate="timeupdate" @ended="ended">
+  <audio :ref="setAudioRef" :src="attachImageUrl(songUrl)" controls preload="metadata" @canplay="canplay" @timeupdate="timeupdate" @ended="ended">
     <!-- （1）属性：controls，preload（2）事件：canplay，timeupdate，ended（3）方法：play()，pause() -->
     <!-- controls：向用户显示音频控件（播放/暂停/进度条/音量） -->
     <!-- preload：属性规定是否在页面加载后载入音频 -->
